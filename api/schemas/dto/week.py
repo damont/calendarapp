@@ -1,0 +1,35 @@
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
+from api.schemas.orm.week import SportsEvent, WeekdayEvent, WeekendPlan
+
+
+class WeekResponse(BaseModel):
+    week_start: datetime
+    week_end: datetime
+    has_libby_mary: bool
+    has_sylvie: bool
+    weekend_plans: list[WeekendPlan]
+    weekday_events: list[WeekdayEvent]
+    sports: list[SportsEvent]
+    notes: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class WeekUpdateRequest(BaseModel):
+    has_libby_mary: Optional[bool] = None
+    has_sylvie: Optional[bool] = None
+    weekend_plans: Optional[list[WeekendPlan]] = None
+    weekday_events: Optional[list[WeekdayEvent]] = None
+    sports: Optional[list[SportsEvent]] = None
+    notes: Optional[str] = None
+
+
+class WeeksQueryParams(BaseModel):
+    start_date: datetime = Field(..., description="Start date for the range")
+    end_date: datetime = Field(..., description="End date for the range")
