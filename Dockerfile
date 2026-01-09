@@ -14,7 +14,6 @@ RUN uv sync --no-dev --no-install-project
 
 # Copy application code
 COPY api/ api/
-COPY frontend/ frontend/
 
 # API image
 FROM python:3.11-slim AS api
@@ -32,23 +31,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8005
 
 CMD ["python", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8005"]
-
-# Frontend image (legacy NiceGUI)
-FROM python:3.11-slim AS frontend
-
-WORKDIR /app
-
-# Copy uv and virtual environment from builder
-COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
-COPY --from=builder /app/.venv /app/.venv
-COPY --from=builder /app/frontend /app/frontend
-COPY --from=builder /app/pyproject.toml /app/
-
-ENV PATH="/app/.venv/bin:$PATH"
-
-EXPOSE 3000
-
-CMD ["python", "-m", "frontend.main"]
 
 # React frontend build stage
 FROM node:20-slim AS react-builder
