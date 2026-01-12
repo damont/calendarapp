@@ -104,6 +104,9 @@ export function WeekCard({ week, isCurrentWeek, onClick }: WeekCardProps) {
                   {week.sports.slice(0, 3).map((sport, i) => (
                     <div key={i} className="text-sm text-gray-700">
                       {sport.child_name} - {sport.sport}
+                      <span className="text-gray-400 ml-1">
+                        {sport.time}{sport.location && ` @ ${sport.location.slice(0, 3).toUpperCase()}`}
+                      </span>
                     </div>
                   ))}
                   {week.sports.length > 3 && (
