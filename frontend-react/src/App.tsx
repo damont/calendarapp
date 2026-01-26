@@ -3,9 +3,11 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Login } from './components/Login';
 import { Header } from './components/Header';
 import { CalendarGrid } from './components/CalendarGrid';
+import { MonthCalendar } from './components/MonthCalendar';
+import { ViewToggle } from './components/ViewToggle';
 import { WeekEditor } from './components/WeekEditor';
 import { apiClient } from './api/client';
-import type { Week, WeekUpdate } from './types';
+import type { Week, WeekUpdate, ViewMode } from './types';
 
 function getWeekStart(date: Date): Date {
   const d = new Date(date);
@@ -29,6 +31,7 @@ function Calendar() {
   const [startDate, setStartDate] = useState(() => getWeekStart(new Date()));
   const [endDate, setEndDate] = useState(() => getTwoMonthsAhead(new Date()));
   const [selectedWeek, setSelectedWeek] = useState<Week | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const loadWeeks = useCallback(async () => {
     setLoading(true);
@@ -68,11 +71,23 @@ function Calendar() {
       <Header startDate={startDate} endDate={endDate} onDateRangeChange={handleDateRangeChange} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
-        <CalendarGrid
-          weeks={weeks}
-          loading={loading}
-          onWeekClick={setSelectedWeek}
-        />
+        <div className="mb-4">
+          <ViewToggle viewMode={viewMode} onChange={setViewMode} />
+        </div>
+
+        {viewMode === 'list' ? (
+          <CalendarGrid
+            weeks={weeks}
+            loading={loading}
+            onWeekClick={setSelectedWeek}
+          />
+        ) : (
+          <MonthCalendar
+            weeks={weeks}
+            loading={loading}
+            onDayClick={setSelectedWeek}
+          />
+        )}
       </main>
 
       {selectedWeek && (

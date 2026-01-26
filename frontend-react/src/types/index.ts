@@ -46,3 +46,13 @@ export interface LoginResponse {
   access_token: string;
   token_type: string;
 }
+
+export type ViewMode = 'list' | 'calendar';
+
+export interface DayEvents {
+  weekendPlans: WeekendPlan[];
+  weekdayEvents: WeekdayEvent[];
+  sports: SportsEvent[];
+  hasLibbyMary: boolean;
+  hasSylvie: boolean;
+}
