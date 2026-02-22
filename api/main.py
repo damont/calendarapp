@@ -33,7 +33,7 @@ app = FastAPI(
     description="API for managing family weekend planning",
     version="0.1.0",
     lifespan=lifespan,
-    docs_url="/agent",
+    docs_url="/api/agent",
     openapi_url="/api/openapi.json",
     redoc_url=None,
 )
