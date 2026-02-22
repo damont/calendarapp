@@ -42,6 +42,12 @@ export interface WeekUpdate {
   notes?: string | null;
 }
 
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+}
+
 export interface LoginResponse {
   access_token: string;
   token_type: string;

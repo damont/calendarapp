@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from beanie import init_beanie
@@ -5,21 +6,25 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from api.config import settings
+from api.config import get_settings
 from api.routes import auth, weeks
+from api.schemas.orm.user import User
 from api.schemas.orm.week import Week
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Initialize MongoDB connection
+    settings = get_settings()
     client = AsyncIOMotorClient(settings.mongodb_url)
     await init_beanie(
         database=client[settings.mongodb_db_name],
-        document_models=[Week],
+        document_models=[User, Week],
     )
+    logger.info("Connected to MongoDB: %s", settings.mongodb_db_name)
     yield
-    # Shutdown: Close MongoDB connection
     client.close()
 
 
@@ -28,6 +33,9 @@ app = FastAPI(
     description="API for managing family weekend planning",
     version="0.1.0",
     lifespan=lifespan,
+    docs_url="/api/agent",
+    openapi_url="/api/openapi.json",
+    redoc_url=None,
 )
 
 # CORS middleware for frontend
@@ -50,9 +58,16 @@ async def health_check():
     return {"status": "healthy"}
 
 
+@app.get("/api/schema")
+async def get_schema():
+    """Convenience endpoint returning the OpenAPI schema."""
+    return app.openapi()
+
+
 if __name__ == "__main__":
     import uvicorn
 
+    settings = get_settings()
     uvicorn.run(
         "api.main:app",
         host=settings.api_host,

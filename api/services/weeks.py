@@ -5,17 +5,20 @@ from api.schemas.orm.week import Week
 from api.utils.dates import get_week_end, get_week_start, get_weeks_in_range
 
 
-async def get_or_create_week(week_start: datetime) -> Week:
+async def get_or_create_week(week_start: datetime, user_id: str) -> Week:
     """
-    Get a week by its start date, or create it with defaults if it doesn't exist.
+    Get a week by its start date and user, or create it with defaults if it doesn't exist.
     """
     normalized_start = get_week_start(week_start)
-    week = await Week.find_one(Week.week_start == normalized_start)
+    week = await Week.find_one(
+        Week.week_start == normalized_start, Week.user_id == user_id
+    )
 
     if week is None:
         week = Week(
             week_start=normalized_start,
             week_end=get_week_end(normalized_start),
+            user_id=user_id,
             has_libby_mary=False,
             has_sylvie=False,
             weekend_plans=[],
@@ -28,25 +31,29 @@ async def get_or_create_week(week_start: datetime) -> Week:
     return week
 
 
-async def get_weeks_by_range(start_date: datetime, end_date: datetime) -> list[Week]:
+async def get_weeks_by_range(
+    start_date: datetime, end_date: datetime, user_id: str
+) -> list[Week]:
     """
-    Get all weeks in a date range, auto-creating any that don't exist.
+    Get all weeks in a date range for a user, auto-creating any that don't exist.
     """
     week_ranges = get_weeks_in_range(start_date, end_date)
     weeks = []
 
     for week_start, _ in week_ranges:
-        week = await get_or_create_week(week_start)
+        week = await get_or_create_week(week_start, user_id)
         weeks.append(week)
 
     return sorted(weeks, key=lambda w: w.week_start)
 
 
-async def update_week(week_start: datetime, update_data: WeekUpdateRequest) -> Week:
+async def update_week(
+    week_start: datetime, update_data: WeekUpdateRequest, user_id: str
+) -> Week:
     """
     Update a week's fields. Creates the week if it doesn't exist.
     """
-    week = await get_or_create_week(week_start)
+    week = await get_or_create_week(week_start, user_id)
 
     update_dict = update_data.model_dump(exclude_unset=True)
     if update_dict:
@@ -57,12 +64,14 @@ async def update_week(week_start: datetime, update_data: WeekUpdateRequest) -> W
     return week
 
 
-async def delete_week(week_start: datetime) -> bool:
+async def delete_week(week_start: datetime, user_id: str) -> bool:
     """
     Delete a week (reset to nothing - it will be recreated with defaults on next access).
     """
     normalized_start = get_week_start(week_start)
-    week = await Week.find_one(Week.week_start == normalized_start)
+    week = await Week.find_one(
+        Week.week_start == normalized_start, Week.user_id == user_id
+    )
 
     if week:
         await week.delete()

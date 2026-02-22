@@ -1,14 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-interface LoginProps {
-  onSwitchToRegister: () => void;
-  onSwitchToAgent: () => void;
+interface RegisterProps {
+  onSwitchToLogin: () => void;
 }
 
-export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
-  const { login } = useAuth();
+export function Register({ onSwitchToLogin }: RegisterProps) {
+  const { register } = useAuth();
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,9 +19,9 @@ export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
     setLoading(true);
 
     try {
-      const success = await login(username, password);
+      const success = await register(username, email, password);
       if (!success) {
-        setError('Invalid username or password');
+        setError('Registration failed. Username or email may already be taken.');
       }
     } catch {
       setError('An error occurred');
@@ -33,7 +33,7 @@ export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 w-full max-w-sm">
-        <h1 className="text-xl font-medium text-gray-900 mb-6">Family Calendar</h1>
+        <h1 className="text-xl font-medium text-gray-900 mb-6">Create Account</h1>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -46,7 +46,22 @@ export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              placeholder="Enter username"
+              placeholder="Choose a username"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm text-gray-600 mb-2">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+              placeholder="Enter your email"
               disabled={loading}
             />
           </div>
@@ -61,7 +76,7 @@ export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              placeholder="Enter password"
+              placeholder="Choose a password"
               disabled={loading}
             />
           </div>
@@ -75,26 +90,20 @@ export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
             disabled={loading}
             className="w-full py-2 px-4 bg-gray-900 text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
 
-        <div className="mt-4 text-center space-y-2">
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Already have an account?{' '}
           <button
             type="button"
-            onClick={onSwitchToRegister}
-            className="text-sm text-gray-900 font-medium hover:underline block w-full"
+            onClick={onSwitchToLogin}
+            className="text-gray-900 font-medium hover:underline"
           >
-            Don't have an account? Register
+            Sign in
           </button>
-          <button
-            type="button"
-            onClick={onSwitchToAgent}
-            className="text-sm text-gray-500 hover:underline block w-full"
-          >
-            Generate an agent token
-          </button>
-        </div>
+        </p>
       </div>
     </div>
   );

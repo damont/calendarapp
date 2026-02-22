@@ -1,4 +1,4 @@
-import type { Week, WeekUpdate, LoginResponse } from '../types';
+import type { Week, WeekUpdate, LoginResponse, User } from '../types';
 
 const TOKEN_KEY = 'calendar_token';
 
@@ -24,11 +24,15 @@ class ApiClient {
     return !!this.getToken();
   }
 
-  async login(password: string): Promise<boolean> {
+  async login(username: string, password: string): Promise<boolean> {
+    const formData = new URLSearchParams();
+    formData.append('username', username);
+    formData.append('password', password);
+
     const response = await fetch('/api/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData,
     });
 
     if (response.ok) {
@@ -37,6 +41,59 @@ class ApiClient {
       return true;
     }
     return false;
+  }
+
+  async register(username: string, email: string, password: string): Promise<boolean> {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password }),
+    });
+
+    if (response.ok) {
+      const data: LoginResponse = await response.json();
+      this.setToken(data.access_token);
+      return true;
+    }
+    return false;
+  }
+
+  async getMe(): Promise<User> {
+    const response = await fetch('/api/auth/me', {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        this.clearToken();
+      }
+      throw new Error('Failed to get user');
+    }
+
+    return response.json();
+  }
+
+  async agentToken(
+    username: string,
+    password: string,
+    expiresInDays: number
+  ): Promise<{ access_token: string; token_type: string; expires_in_days: number }> {
+    const response = await fetch('/api/auth/agent-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        password,
+        expires_in_days: expiresInDays,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Request failed' }));
+      throw new Error(error.detail || 'Failed to generate agent token');
+    }
+
+    return response.json();
   }
 
   logout(): void {
