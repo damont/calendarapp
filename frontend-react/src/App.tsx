@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Login } from './components/Login';
+import { Register } from './components/Register';
+import { AgentAuth } from './components/AgentAuth';
 import { Header } from './components/Header';
 import { CalendarGrid } from './components/CalendarGrid';
 import { MonthCalendar } from './components/MonthCalendar';
@@ -32,6 +34,7 @@ function Calendar() {
   const [endDate, setEndDate] = useState(() => getTwoMonthsAhead(new Date()));
   const [selectedWeek, setSelectedWeek] = useState<Week | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [authView, setAuthView] = useState<'login' | 'register' | 'agent'>('login');
 
   const loadWeeks = useCallback(async () => {
     setLoading(true);
@@ -63,7 +66,13 @@ function Calendar() {
   };
 
   if (!isAuthenticated) {
-    return <Login />;
+    if (authView === 'register') {
+      return <Register onSwitchToLogin={() => setAuthView('login')} />;
+    }
+    if (authView === 'agent') {
+      return <AgentAuth onSwitchToLogin={() => setAuthView('login')} />;
+    }
+    return <Login onSwitchToRegister={() => setAuthView('register')} onSwitchToAgent={() => setAuthView('agent')} />;
   }
 
   return (

@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from pydantic_settings import BaseSettings
 
 
@@ -7,7 +9,6 @@ class Settings(BaseSettings):
     mongodb_db_name: str = "calendarapp"
 
     # Auth
-    app_password: str = "changeme"
     jwt_secret: str = "change-this-secret-in-production"
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7  # 1 week
@@ -22,7 +23,10 @@ class Settings(BaseSettings):
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
+        "extra": "ignore",
     }
 
 
-settings = Settings()
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from beanie import Document
+from beanie import Document, Indexed
 from pydantic import BaseModel, Field
 
 
@@ -30,6 +30,7 @@ class SportsEvent(BaseModel):
 class Week(Document):
     week_start: datetime = Field(..., description="Monday of the week")
     week_end: datetime = Field(..., description="Sunday of the week")
+    user_id: Indexed(str) = Field(..., description="Owner user ID")
 
     # Kid custody
     has_libby_mary: bool = Field(default=False, description="Has Libby and Mary Craft")

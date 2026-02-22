@@ -1,44 +1,74 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+import jwt
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+from beanie import PydanticObjectId
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 
-from api.config import settings
+from api.config import get_settings
+from api.schemas.orm.user import User
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against a hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+ph = PasswordHasher()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 def hash_password(password: str) -> str:
-    """Hash a password."""
-    return pwd_context.hash(password)
+    """Hash a password using Argon2."""
+    return ph.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against an Argon2 hash."""
+    try:
+        ph.verify(hashed_password, plain_password)
+        return True
+    except VerifyMismatchError:
+        return False
+
+
+def create_access_token(
+    subject: str, expires_delta: Optional[timedelta] = None
+) -> str:
     """Create a JWT access token."""
-    to_encode = data.copy()
+    settings = get_settings()
+    now = datetime.now(timezone.utc)
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = now + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.jwt_expire_minutes)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, settings.jwt_secret, algorithm=settings.jwt_algorithm
+        expire = now + timedelta(minutes=settings.jwt_expire_minutes)
+    payload = {"sub": subject, "exp": expire}
+    return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+    """Dependency to validate JWT token and return the current User."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
-    return encoded_jwt
 
-
-def decode_access_token(token: str) -> Optional[dict]:
-    """Decode and validate a JWT access token."""
+    settings = get_settings()
     try:
         payload = jwt.decode(
             token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
         )
-        return payload
-    except JWTError:
-        return None
+    except jwt.PyJWTError:
+        raise credentials_exception
+
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise credentials_exception
+
+    try:
+        user = await User.get(PydanticObjectId(user_id))
+    except Exception:
+        raise credentials_exception
+
+    if user is None:
+        raise credentials_exception
+
+    return user
