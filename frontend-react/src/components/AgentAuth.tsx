@@ -87,7 +87,7 @@ export function AgentAuth({ onSwitchToLogin }: AgentAuthProps) {
             <div className="space-y-1 text-sm text-gray-600">
               <div>
                 <span className="font-medium text-gray-900">API Docs:</span>{' '}
-                <code className="px-1 py-0.5 rounded text-xs bg-gray-100">{baseUrl}/api/agent</code>
+                <code className="px-1 py-0.5 rounded text-xs bg-gray-100">{baseUrl}/agent</code>
               </div>
               <div>
                 <span className="font-medium text-gray-900">API Base:</span>{' '}
