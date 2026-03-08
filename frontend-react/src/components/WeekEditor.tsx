@@ -1,20 +1,23 @@
 import { useState } from 'react';
-import type { Week, WeekUpdate, WeekendPlan, WeekdayEvent, SportsEvent } from '../types';
+import type { Week, WeekUpdate, WeekendPlan, WeekdayEvent, SportsEvent, ChildGroup } from '../types';
 
 interface WeekEditorProps {
   week: Week;
+  childGroups: ChildGroup[];
   onSave: (data: WeekUpdate) => Promise<void>;
   onClose: () => void;
 }
 
 type Tab = 'kids' | 'weekend' | 'weekday' | 'sports' | 'notes';
 
-export function WeekEditor({ week, onSave, onClose }: WeekEditorProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('kids');
+export function WeekEditor({ week, childGroups, onSave, onClose }: WeekEditorProps) {
+  const hasKidsFeature = childGroups.length > 0;
+  const defaultTab: Tab = hasKidsFeature ? 'kids' : 'weekend';
+
+  const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
   const [saving, setSaving] = useState(false);
 
-  const [hasLibbyMary, setHasLibbyMary] = useState(week.has_libby_mary);
-  const [hasSylvie, setHasSylvie] = useState(week.has_sylvie);
+  const [childrenPresent, setChildrenPresent] = useState<string[]>(week.children_present);
   const [weekendPlans, setWeekendPlans] = useState<WeekendPlan[]>(week.weekend_plans);
   const [weekdayEvents, setWeekdayEvents] = useState<WeekdayEvent[]>(week.weekday_events);
   const [sports, setSports] = useState<SportsEvent[]>(week.sports);
@@ -41,8 +44,7 @@ export function WeekEditor({ week, onSave, onClose }: WeekEditorProps) {
     setSaving(true);
     try {
       await onSave({
-        has_libby_mary: hasLibbyMary,
-        has_sylvie: hasSylvie,
+        children_present: childrenPresent,
         weekend_plans: weekendPlans,
         weekday_events: weekdayEvents,
         sports,
@@ -55,7 +57,7 @@ export function WeekEditor({ week, onSave, onClose }: WeekEditorProps) {
   };
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'kids', label: 'Kids' },
+    ...(hasKidsFeature ? [{ id: 'kids' as Tab, label: 'Kids' }] : []),
     { id: 'weekend', label: 'Weekend' },
     { id: 'weekday', label: 'Weekday' },
     { id: 'sports', label: 'Sports' },
@@ -101,12 +103,11 @@ export function WeekEditor({ week, onSave, onClose }: WeekEditorProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === 'kids' && (
+          {activeTab === 'kids' && hasKidsFeature && (
             <KidsTab
-              hasLibbyMary={hasLibbyMary}
-              hasSylvie={hasSylvie}
-              onChangeLibbyMary={setHasLibbyMary}
-              onChangeSylvie={setHasSylvie}
+              childGroups={childGroups}
+              childrenPresent={childrenPresent}
+              onChange={setChildrenPresent}
             />
           )}
           {activeTab === 'weekend' && (
@@ -145,36 +146,35 @@ export function WeekEditor({ week, onSave, onClose }: WeekEditorProps) {
 }
 
 function KidsTab({
-  hasLibbyMary,
-  hasSylvie,
-  onChangeLibbyMary,
-  onChangeSylvie,
+  childGroups,
+  childrenPresent,
+  onChange,
 }: {
-  hasLibbyMary: boolean;
-  hasSylvie: boolean;
-  onChangeLibbyMary: (v: boolean) => void;
-  onChangeSylvie: (v: boolean) => void;
+  childGroups: ChildGroup[];
+  childrenPresent: string[];
+  onChange: (ids: string[]) => void;
 }) {
+  const toggleGroup = (id: string, checked: boolean) => {
+    if (checked) {
+      onChange([...childrenPresent, id]);
+    } else {
+      onChange(childrenPresent.filter((gid) => gid !== id));
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <label className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={hasLibbyMary}
-          onChange={(e) => onChangeLibbyMary(e.target.checked)}
-          className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
-        />
-        <span className="text-sm text-gray-900">Libby & Mary Craft</span>
-      </label>
-      <label className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={hasSylvie}
-          onChange={(e) => onChangeSylvie(e.target.checked)}
-          className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
-        />
-        <span className="text-sm text-gray-900">Sylvie</span>
-      </label>
+      {childGroups.map((group) => (
+        <label key={group.id} className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={childrenPresent.includes(group.id)}
+            onChange={(e) => toggleGroup(group.id, e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+          />
+          <span className="text-sm text-gray-900">{group.name}</span>
+        </label>
+      ))}
     </div>
   );
 }

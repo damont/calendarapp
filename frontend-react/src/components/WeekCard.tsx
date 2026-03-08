@@ -1,12 +1,14 @@
-import type { Week } from '../types';
+import type { Week, ChildGroup } from '../types';
+import { ChildBadges } from './ChildBadges';
 
 interface WeekCardProps {
   week: Week;
   isCurrentWeek: boolean;
+  childGroups: ChildGroup[];
   onClick: () => void;
 }
 
-export function WeekCard({ week, isCurrentWeek, onClick }: WeekCardProps) {
+export function WeekCard({ week, isCurrentWeek, childGroups, onClick }: WeekCardProps) {
   const weekStart = new Date(week.week_start);
   const weekEnd = new Date(week.week_end);
 
@@ -41,7 +43,7 @@ export function WeekCard({ week, isCurrentWeek, onClick }: WeekCardProps) {
     return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
   };
 
-  const hasKids = week.has_libby_mary || week.has_sylvie;
+  const hasKids = childGroups.length > 0 && week.children_present.length > 0;
 
   return (
     <div
@@ -59,21 +61,15 @@ export function WeekCard({ week, isCurrentWeek, onClick }: WeekCardProps) {
           </div>
 
           {/* Kids */}
-          <div className="flex gap-2 mb-3">
-            {week.has_libby_mary && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-pink-100 text-pink-800">
-                L&M
-              </span>
-            )}
-            {week.has_sylvie && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                Sylvie
-              </span>
-            )}
-            {!hasKids && (
-              <span className="text-xs text-gray-400">No kids this weekend</span>
-            )}
-          </div>
+          {childGroups.length > 0 && (
+            <div className="flex gap-2 mb-3">
+              {hasKids ? (
+                <ChildBadges childrenPresent={week.children_present} childGroups={childGroups} />
+              ) : (
+                <span className="text-xs text-gray-400">No kids this weekend</span>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-6">
             {/* Weekend plans */}

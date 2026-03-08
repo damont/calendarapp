@@ -1,10 +1,11 @@
-import type { Week } from '../types';
+import type { Week, ChildGroup } from '../types';
 import { WeekCard } from './WeekCard';
 
 interface CalendarGridProps {
   weeks: Week[];
   loading: boolean;
   onWeekClick: (week: Week) => void;
+  childGroups: ChildGroup[];
 }
 
 function getWeekStart(date: Date): Date {
@@ -16,7 +17,7 @@ function getWeekStart(date: Date): Date {
   return d;
 }
 
-export function CalendarGrid({ weeks, loading, onWeekClick }: CalendarGridProps) {
+export function CalendarGrid({ weeks, loading, onWeekClick, childGroups }: CalendarGridProps) {
   const currentWeekStart = getWeekStart(new Date()).toISOString().split('T')[0];
 
   if (loading) {
@@ -46,6 +47,7 @@ export function CalendarGrid({ weeks, loading, onWeekClick }: CalendarGridProps)
             key={week.week_start}
             week={week}
             isCurrentWeek={isCurrentWeek}
+            childGroups={childGroups}
             onClick={() => onWeekClick(week)}
           />
         );

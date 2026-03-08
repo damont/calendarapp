@@ -1,12 +1,14 @@
-import type { Week, DayEvents } from '../types';
+import type { Week, DayEvents, ChildGroup } from '../types';
 import { isSameDay } from '../utils/dateUtils';
+import { ChildBadges } from './ChildBadges';
 
 interface CalendarDayProps {
   date: Date;
   events: DayEvents;
   isCurrentMonth: boolean;
   week: Week | null;
-  onDayClick: (week: Week) => void;
+  childGroups: ChildGroup[];
+  onDayClick: (date: Date, week: Week, events: DayEvents) => void;
 }
 
 export function CalendarDay({
@@ -14,6 +16,7 @@ export function CalendarDay({
   events,
   isCurrentMonth,
   week,
+  childGroups,
   onDayClick,
 }: CalendarDayProps) {
   const today = new Date();
@@ -31,7 +34,7 @@ export function CalendarDay({
 
   const handleClick = () => {
     if (week) {
-      onDayClick(week);
+      onDayClick(date, week, events);
     }
   };
 
@@ -42,7 +45,7 @@ export function CalendarDay({
         !isCurrentMonth ? 'bg-gray-50' : 'bg-white'
       } ${isToday ? 'ring-2 ring-inset ring-gray-900' : ''}`}
     >
-      {/* Day number and kid badges */}
+      {/* Day number and child badges */}
       <div className="flex items-center justify-between mb-1">
         <span
           className={`text-sm font-medium ${
@@ -52,16 +55,7 @@ export function CalendarDay({
           {date.getDate()}
         </span>
         <div className="flex gap-0.5">
-          {events.hasLibbyMary && (
-            <span className="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-medium bg-pink-100 text-pink-800">
-              L&M
-            </span>
-          )}
-          {events.hasSylvie && (
-            <span className="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-800">
-              S
-            </span>
-          )}
+          <ChildBadges childrenPresent={events.childrenPresent} childGroups={childGroups} size="sm" />
         </div>
       </div>
 

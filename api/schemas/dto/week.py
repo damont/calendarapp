@@ -9,8 +9,7 @@ from api.schemas.orm.week import SportsEvent, WeekdayEvent, WeekendPlan
 class WeekResponse(BaseModel):
     week_start: datetime
     week_end: datetime
-    has_libby_mary: bool
-    has_sylvie: bool
+    children_present: list[str]
     weekend_plans: list[WeekendPlan]
     weekday_events: list[WeekdayEvent]
     sports: list[SportsEvent]
@@ -22,8 +21,7 @@ class WeekResponse(BaseModel):
 
 
 class WeekUpdateRequest(BaseModel):
-    has_libby_mary: Optional[bool] = None
-    has_sylvie: Optional[bool] = None
+    children_present: Optional[list[str]] = None
     weekend_plans: Optional[list[WeekendPlan]] = None
     weekday_events: Optional[list[WeekdayEvent]] = None
     sports: Optional[list[SportsEvent]] = None

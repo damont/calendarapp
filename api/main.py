@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from api.config import get_settings
-from api.routes import auth, weeks
+from api.routes import auth, settings, weeks
 from api.schemas.orm.user import User
 from api.schemas.orm.week import Week
 
@@ -50,6 +50,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix="/api")
 app.include_router(weeks.router, prefix="/api")
+app.include_router(settings.router, prefix="/api")
 
 
 @app.get("/api/health")
