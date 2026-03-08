@@ -24,7 +24,7 @@ export function DateRangeSearch({ startDate, endDate, onSearch }: DateRangeSearc
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <label className="text-sm text-gray-600">From</label>
       <input
         type="date"

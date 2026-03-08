@@ -7,9 +7,11 @@ import { Header } from './components/Header';
 import { CalendarGrid } from './components/CalendarGrid';
 import { MonthCalendar } from './components/MonthCalendar';
 import { ViewToggle } from './components/ViewToggle';
+import { DateRangeSearch } from './components/DateRangeSearch';
 import { WeekEditor } from './components/WeekEditor';
+import { SettingsModal } from './components/SettingsModal';
 import { apiClient } from './api/client';
-import type { Week, WeekUpdate, ViewMode } from './types';
+import type { Week, WeekUpdate, ViewMode, ChildGroup } from './types';
 
 function getWeekStart(date: Date): Date {
   const d = new Date(date);
@@ -35,6 +37,8 @@ function Calendar() {
   const [selectedWeek, setSelectedWeek] = useState<Week | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [authView, setAuthView] = useState<'login' | 'register' | 'agent'>('login');
+  const [showSettings, setShowSettings] = useState(false);
+  const [childGroups, setChildGroups] = useState<ChildGroup[]>([]);
 
   const loadWeeks = useCallback(async () => {
     setLoading(true);
@@ -48,11 +52,21 @@ function Calendar() {
     }
   }, [startDate, endDate]);
 
+  const loadSettings = useCallback(async () => {
+    try {
+      const settings = await apiClient.getSettings();
+      setChildGroups(settings.child_groups);
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    }
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       loadWeeks();
+      loadSettings();
     }
-  }, [isAuthenticated, loadWeeks]);
+  }, [isAuthenticated, loadWeeks, loadSettings]);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
     setStartDate(start);
@@ -77,11 +91,18 @@ function Calendar() {
 
   return (
     <div className="min-h-screen">
-      <Header startDate={startDate} endDate={endDate} onDateRangeChange={handleDateRangeChange} />
+      <Header onOpenSettings={() => setShowSettings(true)} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
-        <div className="mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <ViewToggle viewMode={viewMode} onChange={setViewMode} />
+          {viewMode === 'list' && (
+            <DateRangeSearch
+              startDate={startDate}
+              endDate={endDate}
+              onSearch={handleDateRangeChange}
+            />
+          )}
         </div>
 
         {viewMode === 'list' ? (
@@ -89,12 +110,14 @@ function Calendar() {
             weeks={weeks}
             loading={loading}
             onWeekClick={setSelectedWeek}
+            childGroups={childGroups}
           />
         ) : (
           <MonthCalendar
             weeks={weeks}
             loading={loading}
-            onDayClick={setSelectedWeek}
+            onWeekClick={setSelectedWeek}
+            childGroups={childGroups}
           />
         )}
       </main>
@@ -102,8 +125,21 @@ function Calendar() {
       {selectedWeek && (
         <WeekEditor
           week={selectedWeek}
+          childGroups={childGroups}
           onSave={handleSaveWeek}
           onClose={() => setSelectedWeek(null)}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsModal
+          childGroups={childGroups}
+          onSave={async (groups) => {
+            await apiClient.updateSettings({ child_groups: groups });
+            setChildGroups(groups);
+            await loadWeeks();
+          }}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </div>

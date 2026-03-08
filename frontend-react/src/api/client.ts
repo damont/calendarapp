@@ -1,4 +1,4 @@
-import type { Week, WeekUpdate, LoginResponse, User } from '../types';
+import type { Week, WeekUpdate, LoginResponse, User, UserSettings } from '../types';
 
 const TOKEN_KEY = 'calendar_token';
 
@@ -137,6 +137,43 @@ class ApiClient {
         throw new Error('Unauthorized');
       }
       throw new Error('Failed to update week');
+    }
+
+    return response.json();
+  }
+
+  async getSettings(): Promise<UserSettings> {
+    const response = await fetch('/api/settings', {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        this.clearToken();
+        throw new Error('Unauthorized');
+      }
+      throw new Error('Failed to fetch settings');
+    }
+
+    return response.json();
+  }
+
+  async updateSettings(settings: UserSettings): Promise<UserSettings> {
+    const response = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...this.getAuthHeaders(),
+      },
+      body: JSON.stringify(settings),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        this.clearToken();
+        throw new Error('Unauthorized');
+      }
+      throw new Error('Failed to update settings');
     }
 
     return response.json();

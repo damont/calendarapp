@@ -80,8 +80,7 @@ export function getEventsForDate(date: Date, week: Week | null): DayEvents {
     weekendPlans: [],
     weekdayEvents: [],
     sports: [],
-    hasLibbyMary: false,
-    hasSylvie: false,
+    childrenPresent: [],
   };
 
   if (!week) return events;
@@ -108,10 +107,9 @@ export function getEventsForDate(date: Date, week: Week | null): DayEvents {
     (sport) => sport.day.toLowerCase() === dayName
   );
 
-  // Kid badges only shown on weekends
+  // Children present only shown on weekends
   if (isWeekend) {
-    events.hasLibbyMary = week.has_libby_mary;
-    events.hasSylvie = week.has_sylvie;
+    events.childrenPresent = week.children_present;
   }
 
   return events;

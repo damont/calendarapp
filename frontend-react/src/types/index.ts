@@ -20,11 +20,17 @@ export interface SportsEvent {
   location: string;
 }
 
+export interface ChildGroup {
+  id: string;
+  name: string;
+  abbreviation: string;
+  color: string;
+}
+
 export interface Week {
   week_start: string;
   week_end: string;
-  has_libby_mary: boolean;
-  has_sylvie: boolean;
+  children_present: string[];
   weekend_plans: WeekendPlan[];
   weekday_events: WeekdayEvent[];
   sports: SportsEvent[];
@@ -34,8 +40,7 @@ export interface Week {
 }
 
 export interface WeekUpdate {
-  has_libby_mary?: boolean;
-  has_sylvie?: boolean;
+  children_present?: string[];
   weekend_plans?: WeekendPlan[];
   weekday_events?: WeekdayEvent[];
   sports?: SportsEvent[];
@@ -59,6 +64,9 @@ export interface DayEvents {
   weekendPlans: WeekendPlan[];
   weekdayEvents: WeekdayEvent[];
   sports: SportsEvent[];
-  hasLibbyMary: boolean;
-  hasSylvie: boolean;
+  childrenPresent: string[];
+}
+
+export interface UserSettings {
+  child_groups: ChildGroup[];
 }

@@ -32,9 +32,8 @@ class Week(Document):
     week_end: datetime = Field(..., description="Sunday of the week")
     user_id: Indexed(str) = Field(..., description="Owner user ID")
 
-    # Kid custody
-    has_libby_mary: bool = Field(default=False, description="Has Libby and Mary Craft")
-    has_sylvie: bool = Field(default=False, description="Has Sylvie")
+    # Children present this week (list of child group IDs)
+    children_present: list[str] = Field(default_factory=list)
 
     # Plans and events
     weekend_plans: list[WeekendPlan] = Field(default_factory=list)
