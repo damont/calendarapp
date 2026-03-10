@@ -5,8 +5,8 @@ import type { User } from '../types';
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
-  register: (username: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -26,8 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
-    const success = await apiClient.login(username, password);
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    const success = await apiClient.login(email, password);
     if (success) {
       setIsAuthenticated(true);
       const me = await apiClient.getMe();
@@ -36,8 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return success;
   }, []);
 
-  const register = useCallback(async (username: string, email: string, password: string): Promise<boolean> => {
-    const success = await apiClient.register(username, email, password);
+  const register = useCallback(async (name: string, email: string, password: string): Promise<boolean> => {
+    const success = await apiClient.register(name, email, password);
     if (success) {
       setIsAuthenticated(true);
       const me = await apiClient.getMe();

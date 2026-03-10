@@ -7,7 +7,7 @@ interface RegisterProps {
 
 export function Register({ onSwitchToLogin }: RegisterProps) {
   const { register } = useAuth();
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,9 +19,9 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
     setLoading(true);
 
     try {
-      const success = await register(username, email, password);
+      const success = await register(name, email, password);
       if (!success) {
-        setError('Registration failed. Username or email may already be taken.');
+        setError('Registration failed. Email may already be registered.');
       }
     } catch {
       setError('An error occurred');
@@ -37,17 +37,18 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="username" className="block text-sm text-gray-600 mb-2">
-              Username
+            <label htmlFor="name" className="block text-sm text-gray-600 mb-2">
+              Name
             </label>
             <input
-              id="username"
+              id="name"
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              placeholder="Choose a username"
+              placeholder="Display name"
               disabled={loading}
+              required
             />
           </div>
 
@@ -63,6 +64,7 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               placeholder="Enter your email"
               disabled={loading}
+              required
             />
           </div>
 
@@ -78,6 +80,7 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               placeholder="Choose a password"
               disabled={loading}
+              required
             />
           </div>
 
