@@ -3,12 +3,11 @@ import { useAuth } from '../context/AuthContext';
 
 interface LoginProps {
   onSwitchToRegister: () => void;
-  onSwitchToAgent: () => void;
 }
 
-export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
+export function Login({ onSwitchToRegister }: LoginProps) {
   const { login } = useAuth();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,9 +18,9 @@ export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
     setLoading(true);
 
     try {
-      const success = await login(username, password);
+      const success = await login(email, password);
       if (!success) {
-        setError('Invalid username or password');
+        setError('Invalid email or password');
       }
     } catch {
       setError('An error occurred');
@@ -37,16 +36,16 @@ export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="username" className="block text-sm text-gray-600 mb-2">
-              Username
+            <label htmlFor="email" className="block text-sm text-gray-600 mb-2">
+              Email
             </label>
             <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              placeholder="Enter username"
+              placeholder="Enter email"
               disabled={loading}
             />
           </div>
@@ -79,20 +78,13 @@ export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
           </button>
         </form>
 
-        <div className="mt-4 text-center space-y-2">
+        <div className="mt-4 text-center">
           <button
             type="button"
             onClick={onSwitchToRegister}
             className="text-sm text-gray-900 font-medium hover:underline block w-full"
           >
             Don't have an account? Register
-          </button>
-          <button
-            type="button"
-            onClick={onSwitchToAgent}
-            className="text-sm text-gray-500 hover:underline block w-full"
-          >
-            Generate an agent token
           </button>
         </div>
       </div>

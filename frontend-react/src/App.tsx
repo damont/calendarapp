@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
-import { AgentAuth } from './components/AgentAuth';
 import { Header } from './components/Header';
+import { UserProfile } from './components/UserProfile';
 import { CalendarGrid } from './components/CalendarGrid';
 import { MonthCalendar } from './components/MonthCalendar';
 import { ViewToggle } from './components/ViewToggle';
@@ -36,8 +36,9 @@ function Calendar() {
   const [endDate, setEndDate] = useState(() => getTwoMonthsAhead(new Date()));
   const [selectedWeek, setSelectedWeek] = useState<Week | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [authView, setAuthView] = useState<'login' | 'register' | 'agent'>('login');
+  const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const [showSettings, setShowSettings] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [childGroups, setChildGroups] = useState<ChildGroup[]>([]);
 
   const loadWeeks = useCallback(async () => {
@@ -83,52 +84,55 @@ function Calendar() {
     if (authView === 'register') {
       return <Register onSwitchToLogin={() => setAuthView('login')} />;
     }
-    if (authView === 'agent') {
-      return <AgentAuth onSwitchToLogin={() => setAuthView('login')} />;
-    }
-    return <Login onSwitchToRegister={() => setAuthView('register')} onSwitchToAgent={() => setAuthView('agent')} />;
+    return <Login onSwitchToRegister={() => setAuthView('register')} />;
   }
 
   return (
     <div className="min-h-screen">
-      <Header onOpenSettings={() => setShowSettings(true)} />
+      <Header onOpenSettings={() => { setShowSettings(true); setShowProfile(false); }} onProfileClick={() => setShowProfile(true)} />
 
-      <main className="max-w-5xl mx-auto px-4 py-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <ViewToggle viewMode={viewMode} onChange={setViewMode} />
-          {viewMode === 'list' && (
-            <DateRangeSearch
-              startDate={startDate}
-              endDate={endDate}
-              onSearch={handleDateRangeChange}
+      {showProfile ? (
+        <UserProfile />
+      ) : (
+        <>
+          <main className="max-w-5xl mx-auto px-4 py-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <ViewToggle viewMode={viewMode} onChange={setViewMode} />
+              {viewMode === 'list' && (
+                <DateRangeSearch
+                  startDate={startDate}
+                  endDate={endDate}
+                  onSearch={handleDateRangeChange}
+                />
+              )}
+            </div>
+
+            {viewMode === 'list' ? (
+              <CalendarGrid
+                weeks={weeks}
+                loading={loading}
+                onWeekClick={setSelectedWeek}
+                childGroups={childGroups}
+              />
+            ) : (
+              <MonthCalendar
+                weeks={weeks}
+                loading={loading}
+                onWeekClick={setSelectedWeek}
+                childGroups={childGroups}
+              />
+            )}
+          </main>
+
+          {selectedWeek && (
+            <WeekEditor
+              week={selectedWeek}
+              childGroups={childGroups}
+              onSave={handleSaveWeek}
+              onClose={() => setSelectedWeek(null)}
             />
           )}
-        </div>
-
-        {viewMode === 'list' ? (
-          <CalendarGrid
-            weeks={weeks}
-            loading={loading}
-            onWeekClick={setSelectedWeek}
-            childGroups={childGroups}
-          />
-        ) : (
-          <MonthCalendar
-            weeks={weeks}
-            loading={loading}
-            onWeekClick={setSelectedWeek}
-            childGroups={childGroups}
-          />
-        )}
-      </main>
-
-      {selectedWeek && (
-        <WeekEditor
-          week={selectedWeek}
-          childGroups={childGroups}
-          onSave={handleSaveWeek}
-          onClose={() => setSelectedWeek(null)}
-        />
+        </>
       )}
 
       {showSettings && (

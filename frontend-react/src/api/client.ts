@@ -24,15 +24,11 @@ class ApiClient {
     return !!this.getToken();
   }
 
-  async login(username: string, password: string): Promise<boolean> {
-    const formData = new URLSearchParams();
-    formData.append('username', username);
-    formData.append('password', password);
-
+  async login(email: string, password: string): Promise<boolean> {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
     });
 
     if (response.ok) {
@@ -43,11 +39,11 @@ class ApiClient {
     return false;
   }
 
-  async register(username: string, email: string, password: string): Promise<boolean> {
+  async register(name: string, email: string, password: string): Promise<boolean> {
     const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ name, email, password }),
     });
 
     if (response.ok) {
@@ -74,7 +70,7 @@ class ApiClient {
   }
 
   async agentToken(
-    username: string,
+    email: string,
     password: string,
     expiresInDays: number
   ): Promise<{ access_token: string; token_type: string; expires_in_days: number }> {
@@ -82,7 +78,7 @@ class ApiClient {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        username,
+        email,
         password,
         expires_in_days: expiresInDays,
       }),

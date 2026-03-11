@@ -11,7 +11,7 @@ interface TokenResult {
 }
 
 export function AgentAuth({ onSwitchToLogin }: AgentAuthProps) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [expiresInDays, setExpiresInDays] = useState(30);
   const [error, setError] = useState('');
@@ -25,7 +25,7 @@ export function AgentAuth({ onSwitchToLogin }: AgentAuthProps) {
     setLoading(true);
 
     try {
-      const result = await apiClient.agentToken(username, password, expiresInDays);
+      const result = await apiClient.agentToken(email, password, expiresInDays);
       setTokenResult({
         access_token: result.access_token,
         expires_in_days: result.expires_in_days,
@@ -118,17 +118,17 @@ export function AgentAuth({ onSwitchToLogin }: AgentAuthProps) {
             )}
 
             <div className="mb-4">
-              <label htmlFor="agent-username" className="block text-sm text-gray-600 mb-2">
-                Username
+              <label htmlFor="agent-email" className="block text-sm text-gray-600 mb-2">
+                Email
               </label>
               <input
-                id="agent-username"
-                type="text"
+                id="agent-email"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                placeholder="Enter username"
+                placeholder="Enter email"
                 disabled={loading}
               />
             </div>

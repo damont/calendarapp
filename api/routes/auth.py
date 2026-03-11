@@ -7,6 +7,7 @@ from api.schemas.dto.auth import (
     AgentTokenRequest,
     AgentTokenResponse,
     RegisterRequest,
+    UserLogin,
     TokenResponse,
     UserResponse,
 )
@@ -24,18 +25,16 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(request: RegisterRequest):
     """Register a new user account."""
-    existing = await User.find_one(
-        {"$or": [{"username": request.username}, {"email": request.email}]}
-    )
+    existing = await User.find_one(User.email == request.email)
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Username or email already taken",
+            detail="Email already registered",
         )
 
     now = datetime.now(timezone.utc)
     user = User(
-        username=request.username,
+        username=request.email,  # Use email as username for backwards compatibility
         email=request.email,
         hashed_password=hash_password(request.password),
         created_at=now,
@@ -48,13 +47,13 @@ async def register(request: RegisterRequest):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    """Login with username and password."""
-    user = await User.find_one(User.username == form_data.username)
-    if not user or not verify_password(form_data.password, user.hashed_password):
+async def login(data: UserLogin):
+    """Login with email and password."""
+    user = await User.find_one(User.email == data.email)
+    if not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
+            detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -65,17 +64,17 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 @router.get("/me", response_model=UserResponse)
 async def me(user: User = Depends(get_current_user)):
     """Get current user info."""
-    return UserResponse(id=str(user.id), username=user.username, email=user.email)
+    return UserResponse(id=str(user.id), name=user.username, email=user.email)
 
 
 @router.post("/agent-token", response_model=AgentTokenResponse)
 async def agent_token(data: AgentTokenRequest):
     """Create a long-lived JWT for AI agent access."""
-    user = await User.find_one(User.username == data.username)
+    user = await User.find_one(User.email == data.email)
     if not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
+            detail="Invalid email or password",
         )
 
     token = create_access_token(
