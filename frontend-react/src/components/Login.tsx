@@ -3,10 +3,9 @@ import { useAuth } from '../context/AuthContext';
 
 interface LoginProps {
   onSwitchToRegister: () => void;
-  onSwitchToAgent: () => void;
 }
 
-export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
+export function Login({ onSwitchToRegister }: LoginProps) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -79,20 +78,13 @@ export function Login({ onSwitchToRegister, onSwitchToAgent }: LoginProps) {
           </button>
         </form>
 
-        <div className="mt-4 text-center space-y-2">
+        <div className="mt-4 text-center">
           <button
             type="button"
             onClick={onSwitchToRegister}
             className="text-sm text-gray-900 font-medium hover:underline block w-full"
           >
             Don't have an account? Register
-          </button>
-          <button
-            type="button"
-            onClick={onSwitchToAgent}
-            className="text-sm text-gray-500 hover:underline block w-full"
-          >
-            Generate an agent token
           </button>
         </div>
       </div>

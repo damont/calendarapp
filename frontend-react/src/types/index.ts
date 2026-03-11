@@ -49,8 +49,9 @@ export interface WeekUpdate {
 
 export interface User {
   id: string;
-  username: string;
+  name: string;
   email: string;
+  is_active: boolean;
 }
 
 export interface LoginResponse {
