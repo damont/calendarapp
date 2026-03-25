@@ -19,6 +19,14 @@ class Settings(BaseSettings):
 
     # Frontend
     frontend_port: int = 8085
+    frontend_base_url: str = "http://localhost:3000"
+
+    # SMTP (for password reset emails)
+    smtp_email: str = ""
+    smtp_app_password: str = ""
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    password_reset_expire_minutes: int = 60
 
     model_config = {
         "env_file": ".env",

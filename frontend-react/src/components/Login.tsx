@@ -3,9 +3,10 @@ import { useAuth } from '../context/AuthContext';
 
 interface LoginProps {
   onSwitchToRegister: () => void;
+  onForgotPassword: () => void;
 }
 
-export function Login({ onSwitchToRegister }: LoginProps) {
+export function Login({ onSwitchToRegister, onForgotPassword }: LoginProps) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -78,7 +79,14 @@ export function Login({ onSwitchToRegister }: LoginProps) {
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-4 text-center space-y-2">
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            className="text-sm text-gray-500 hover:underline block w-full"
+          >
+            Forgot password?
+          </button>
           <button
             type="button"
             onClick={onSwitchToRegister}
