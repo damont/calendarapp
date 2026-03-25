@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ForgotPassword } from './components/ForgotPassword';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
+import { ResetPassword } from './components/ResetPassword';
 import { Header } from './components/Header';
 import { UserProfile } from './components/UserProfile';
 import { CalendarGrid } from './components/CalendarGrid';
@@ -36,7 +38,12 @@ function Calendar() {
   const [endDate, setEndDate] = useState(() => getTwoMonthsAhead(new Date()));
   const [selectedWeek, setSelectedWeek] = useState<Week | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [authView, setAuthView] = useState<'login' | 'register'>('login');
+  const [authView, setAuthView] = useState<'login' | 'register' | 'forgot-password' | 'reset-password'>(() => {
+    const path = window.location.pathname;
+    if (path === '/forgot-password') return 'forgot-password';
+    if (path.startsWith('/reset-password/')) return 'reset-password';
+    return 'login';
+  });
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [childGroups, setChildGroups] = useState<ChildGroup[]>([]);
@@ -81,10 +88,17 @@ function Calendar() {
   };
 
   if (!isAuthenticated) {
+    if (authView === 'forgot-password') {
+      return <ForgotPassword onBack={() => { setAuthView('login'); window.history.pushState({}, '', '/'); }} />;
+    }
+    if (authView === 'reset-password') {
+      const token = window.location.pathname.split('/reset-password/')[1] || '';
+      return <ResetPassword token={token} onBack={() => { setAuthView('login'); window.history.pushState({}, '', '/'); }} />;
+    }
     if (authView === 'register') {
       return <Register onSwitchToLogin={() => setAuthView('login')} />;
     }
-    return <Login onSwitchToRegister={() => setAuthView('register')} />;
+    return <Login onSwitchToRegister={() => setAuthView('register')} onForgotPassword={() => { setAuthView('forgot-password'); window.history.pushState({}, '', '/forgot-password'); }} />;
   }
 
   return (
