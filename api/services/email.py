@@ -41,8 +41,8 @@ async def send_password_reset_email(to_email: str, reset_url: str) -> None:
 <p style="color:#888; font-size:13px; margin-top:24px;">This link expires in 1 hour.</p>
 </td></tr></table></body></html>"""
 
-    msg.attach(MIMEText(plain_text, "plain"))
-    msg.attach(MIMEText(html_content, "html"))
+    msg.attach(MIMEText(plain_text, "plain", _charset="utf-8"))
+    msg.attach(MIMEText(html_content, "html", _charset="utf-8"))
 
     try:
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:

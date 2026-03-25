@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -27,6 +28,13 @@ class Settings(BaseSettings):
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
     password_reset_expire_minutes: int = 60
+
+    @field_validator("frontend_base_url")
+    @classmethod
+    def _ensure_scheme(cls, v: str) -> str:
+        if v and not v.startswith(("http://", "https://")):
+            return f"https://{v}"
+        return v
 
     model_config = {
         "env_file": ".env",
