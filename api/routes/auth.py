@@ -8,6 +8,7 @@ from api.config import get_settings
 from api.schemas.dto.auth import (
     AgentTokenRequest,
     AgentTokenResponse,
+    GoogleLoginRequest,
     MessageResponse,
     PasswordResetConfirm,
     PasswordResetRequest,
@@ -43,6 +44,7 @@ async def register(request: RegisterRequest):
     user = User(
         username=request.email,  # Use email as username for backwards compatibility
         email=request.email,
+        display_name=request.name,
         hashed_password=hash_password(request.password),
         created_at=now,
         updated_at=now,
@@ -57,7 +59,7 @@ async def register(request: RegisterRequest):
 async def login(data: UserLogin):
     """Login with email and password."""
     user = await User.find_one(User.email == data.email)
-    if not user or not verify_password(data.password, user.hashed_password):
+    if not user or not user.hashed_password or not verify_password(data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -71,14 +73,14 @@ async def login(data: UserLogin):
 @router.get("/me", response_model=UserResponse)
 async def me(user: User = Depends(get_current_user)):
     """Get current user info."""
-    return UserResponse(id=str(user.id), name=user.username, email=user.email)
+    return UserResponse(id=str(user.id), name=user.display_name or user.username, email=user.email)
 
 
 @router.post("/agent-token", response_model=AgentTokenResponse)
 async def agent_token(data: AgentTokenRequest):
     """Create a long-lived JWT for AI agent access."""
     user = await User.find_one(User.email == data.email)
-    if not user or not verify_password(data.password, user.hashed_password):
+    if not user or not user.hashed_password or not verify_password(data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -164,3 +166,69 @@ async def reset_password(data: PasswordResetConfirm):
     await reset_token.save()
 
     return MessageResponse(message="Password has been reset successfully.")
+
+
+@router.post("/google", response_model=TokenResponse)
+async def google_login(data: GoogleLoginRequest):
+    """Login or register via Google OAuth."""
+    settings = get_settings()
+    if not settings.google_client_id:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Google login not configured",
+        )
+
+    try:
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+    except ImportError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Google auth library not installed",
+        )
+
+    try:
+        idinfo = google_id_token.verify_oauth2_token(
+            data.id_token, google_requests.Request(), settings.google_client_id
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token",
+        )
+
+    sub = idinfo.get("sub")
+    email = idinfo.get("email")
+    email_verified = idinfo.get("email_verified", False)
+    name = idinfo.get("name") or (email.split("@")[0] if email else None)
+
+    if not sub or not email or not email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Google token missing required claims",
+        )
+
+    user = await User.find_one(User.google_sub == sub)
+
+    if not user:
+        user = await User.find_one(User.email == email)
+        if user:
+            user.google_sub = sub
+            user.email_verified = True
+            await user.save()
+        else:
+            now = datetime.now(timezone.utc)
+            user = User(
+                email=email,
+                username=email,
+                display_name=name,
+                hashed_password=None,
+                google_sub=sub,
+                email_verified=True,
+                created_at=now,
+                updated_at=now,
+            )
+            await user.insert()
+
+    token = create_access_token(subject=str(user.id))
+    return TokenResponse(access_token=token)

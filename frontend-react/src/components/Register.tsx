@@ -1,17 +1,33 @@
 import { useState, type FormEvent } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
 interface RegisterProps {
   onSwitchToLogin: () => void;
 }
 
 export function Register({ onSwitchToLogin }: RegisterProps) {
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleGoogleSuccess = async (credential: string | undefined) => {
+    if (!credential) return;
+    setLoading(true);
+    setError('');
+    try {
+      await googleLogin(credential);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -34,6 +50,25 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
     <div className="min-h-screen flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 w-full max-w-sm">
         <h1 className="text-xl font-medium text-gray-900 mb-6">Create Account</h1>
+
+        {googleClientId && (
+          <div className="mb-4">
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={(resp) => handleGoogleSuccess(resp.credential)}
+                onError={() => setError('Google login failed')}
+              />
+            </div>
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-white px-2 text-gray-500">or</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

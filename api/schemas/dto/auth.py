@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -34,6 +36,11 @@ class UserResponse(BaseModel):
     id: str
     name: str
     email: str
+
+
+class GoogleLoginRequest(BaseModel):
+    id_token: str
+    invite_token: Optional[str] = None
 
 
 class AgentTokenRequest(BaseModel):
