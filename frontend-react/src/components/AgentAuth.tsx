@@ -11,8 +11,6 @@ interface TokenResult {
 }
 
 export function AgentAuth({ onSwitchToLogin }: AgentAuthProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [expiresInDays, setExpiresInDays] = useState(30);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,7 +23,7 @@ export function AgentAuth({ onSwitchToLogin }: AgentAuthProps) {
     setLoading(true);
 
     try {
-      const result = await apiClient.agentToken(email, password, expiresInDays);
+      const result = await apiClient.agentToken(expiresInDays);
       setTokenResult({
         access_token: result.access_token,
         expires_in_days: result.expires_in_days,
@@ -46,7 +44,6 @@ export function AgentAuth({ onSwitchToLogin }: AgentAuthProps) {
 
   const handleReset = () => {
     setTokenResult(null);
-    setPassword('');
     setCopied(false);
   };
 
@@ -117,36 +114,8 @@ export function AgentAuth({ onSwitchToLogin }: AgentAuthProps) {
               <p className="text-red-600 text-sm mb-4">{error}</p>
             )}
 
-            <div className="mb-4">
-              <label htmlFor="agent-email" className="block text-sm text-gray-600 mb-2">
-                Email
-              </label>
-              <input
-                id="agent-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                placeholder="Enter email"
-                disabled={loading}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="agent-password" className="block text-sm text-gray-600 mb-2">
-                Password
-              </label>
-              <input
-                id="agent-password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                placeholder="Enter password"
-                disabled={loading}
-              />
+            <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+              Generate a token from your current signed-in session. Password re-entry is not required.
             </div>
 
             <div className="mb-4">
