@@ -1,5 +1,14 @@
 import type { Week, WeekUpdate, LoginResponse, User, UserSettings } from '../types';
 
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 const TOKEN_KEY = 'calendar_token';
 
 class ApiClient {
@@ -89,6 +98,25 @@ class ApiClient {
     }
 
     return response.json();
+  }
+
+  async googleLogin(idToken: string, inviteToken?: string | null): Promise<{ access_token: string; token_type: string }> {
+    const response = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token: idToken, invite_token: inviteToken ?? null }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({
+        detail: 'Google login failed',
+      }));
+      throw new ApiError(response.status, error.detail);
+    }
+
+    const data = await response.json() as { access_token: string; token_type: string };
+    this.setToken(data.access_token);
+    return data;
   }
 
   logout(): void {

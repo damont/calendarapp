@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
@@ -21,6 +22,9 @@ class Settings(BaseSettings):
     # Frontend
     frontend_port: int = 8085
     frontend_base_url: str = "http://localhost:3000"
+
+    # Google OAuth
+    google_client_id: Optional[str] = None
 
     # SMTP (for password reset emails)
     smtp_email: str = ""
