@@ -77,15 +77,11 @@ async def me(user: User = Depends(get_current_user)):
 
 
 @router.post("/agent-token", response_model=AgentTokenResponse)
-async def agent_token(data: AgentTokenRequest):
-    """Create a long-lived JWT for AI agent access."""
-    user = await User.find_one(User.email == data.email)
-    if not user or not user.hashed_password or not verify_password(data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-        )
-
+async def agent_token(
+    data: AgentTokenRequest,
+    user: User = Depends(get_current_user),
+):
+    """Create a long-lived JWT for AI agent access for the authenticated user."""
     token = create_access_token(
         subject=str(user.id),
         expires_delta=timedelta(days=data.expires_in_days),

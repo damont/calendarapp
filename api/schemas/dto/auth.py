@@ -44,8 +44,6 @@ class GoogleLoginRequest(BaseModel):
 
 
 class AgentTokenRequest(BaseModel):
-    email: EmailStr
-    password: str
     expires_in_days: int = Field(default=30, ge=1, le=365)
 
 

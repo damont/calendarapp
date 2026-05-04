@@ -4,7 +4,6 @@ import { apiClient } from "../api/client";
 
 export function UserProfile() {
   const { user } = useAuth();
-  const [password, setPassword] = useState('');
   const [expiresInDays, setExpiresInDays] = useState(30);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,12 +25,11 @@ export function UserProfile() {
     setLoading(true);
 
     try {
-      const result = await apiClient.agentToken(user.email, password, expiresInDays);
+      const result = await apiClient.agentToken(expiresInDays);
       setTokenResult({
         access_token: result.access_token,
         expires_in_days: result.expires_in_days,
       });
-      setPassword('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate token');
     } finally {
@@ -48,7 +46,6 @@ export function UserProfile() {
 
   const handleReset = () => {
     setTokenResult(null);
-    setPassword('');
     setCopied(false);
     setError('');
   };
@@ -148,18 +145,8 @@ export function UserProfile() {
               {error && (
                 <p className="text-red-600 text-sm">{error}</p>
               )}
-              <div>
-                <label className="block text-xs text-gray-600 mb-1">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                  disabled={loading}
-                />
+              <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+                This uses your current signed-in session. No password re-entry is required.
               </div>
               <div>
                 <label className="block text-xs text-gray-600 mb-1">
