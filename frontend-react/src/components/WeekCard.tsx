@@ -6,9 +6,10 @@ interface WeekCardProps {
   isCurrentWeek: boolean;
   childGroups: ChildGroup[];
   onClick: () => void;
+  onOpenPage: () => void;
 }
 
-export function WeekCard({ week, isCurrentWeek, childGroups, onClick }: WeekCardProps) {
+export function WeekCard({ week, isCurrentWeek, childGroups, onClick, onOpenPage }: WeekCardProps) {
   const weekStart = new Date(week.week_start);
   const weekEnd = new Date(week.week_end);
 
@@ -44,12 +45,26 @@ export function WeekCard({ week, isCurrentWeek, childGroups, onClick }: WeekCard
   };
 
   const hasKids = childGroups.length > 0 && week.children_present.length > 0;
+  const hasPage = week.has_html_page;
 
   return (
     <div
+      onClick={hasPage ? onOpenPage : undefined}
+      role={hasPage ? 'button' : undefined}
+      tabIndex={hasPage ? 0 : undefined}
+      onKeyDown={
+        hasPage
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onOpenPage();
+              }
+            }
+          : undefined
+      }
       className={`bg-white rounded-lg border border-gray-200 p-4 ${
         isCurrentWeek ? 'ring-2 ring-gray-900 ring-offset-2' : ''
-      }`}
+      } ${hasPage ? 'cursor-pointer hover:border-gray-400 transition-colors' : ''}`}
     >
       <div className="flex gap-6">
         {/* Left side - dates, kids, weekend plans, sports */}
@@ -141,14 +156,28 @@ export function WeekCard({ week, isCurrentWeek, childGroups, onClick }: WeekCard
           )}
         </div>
 
-        {/* Edit button */}
-        <div className="flex-shrink-0 self-start">
+        {/* Actions */}
+        <div className="flex-shrink-0 self-start flex flex-col gap-2">
           <button
-            onClick={onClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick();
+            }}
             className="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
           >
             Edit
           </button>
+          {hasPage && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenPage();
+              }}
+              className="px-3 py-1.5 text-sm text-white bg-gray-900 hover:bg-gray-700 rounded-md transition-colors"
+            >
+              View page
+            </button>
+          )}
         </div>
       </div>
     </div>

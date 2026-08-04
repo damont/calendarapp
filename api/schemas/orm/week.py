@@ -43,9 +43,17 @@ class Week(Document):
     # Notes
     notes: Optional[str] = None
 
+    # Standalone HTML page for the week, maintained by the caller's agents
+    html_page: Optional[str] = None
+    html_page_updated_at: Optional[datetime] = None
+
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @property
+    def has_html_page(self) -> bool:
+        return bool(self.html_page and self.html_page.strip())
 
     class Settings:
         name = "weeks"

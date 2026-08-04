@@ -5,6 +5,7 @@ interface CalendarGridProps {
   weeks: Week[];
   loading: boolean;
   onWeekClick: (week: Week) => void;
+  onWeekPageClick: (week: Week) => void;
   childGroups: ChildGroup[];
 }
 
@@ -17,7 +18,7 @@ function getWeekStart(date: Date): Date {
   return d;
 }
 
-export function CalendarGrid({ weeks, loading, onWeekClick, childGroups }: CalendarGridProps) {
+export function CalendarGrid({ weeks, loading, onWeekClick, onWeekPageClick, childGroups }: CalendarGridProps) {
   const currentWeekStart = getWeekStart(new Date()).toISOString().split('T')[0];
 
   if (loading) {
@@ -49,6 +50,7 @@ export function CalendarGrid({ weeks, loading, onWeekClick, childGroups }: Calen
             isCurrentWeek={isCurrentWeek}
             childGroups={childGroups}
             onClick={() => onWeekClick(week)}
+            onOpenPage={() => onWeekPageClick(week)}
           />
         );
       })}
