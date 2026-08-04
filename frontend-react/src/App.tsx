@@ -11,6 +11,7 @@ import { MonthCalendar } from './components/MonthCalendar';
 import { ViewToggle } from './components/ViewToggle';
 import { DateRangeSearch } from './components/DateRangeSearch';
 import { WeekEditor } from './components/WeekEditor';
+import { WeekPageView } from './components/WeekPageView';
 import { SettingsModal } from './components/SettingsModal';
 import { apiClient } from './api/client';
 import type { Week, WeekUpdate, ViewMode, ChildGroup } from './types';
@@ -37,6 +38,7 @@ function Calendar() {
   const [startDate, setStartDate] = useState(() => getWeekStart(new Date()));
   const [endDate, setEndDate] = useState(() => getTwoMonthsAhead(new Date()));
   const [selectedWeek, setSelectedWeek] = useState<Week | null>(null);
+  const [pageWeek, setPageWeek] = useState<Week | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [authView, setAuthView] = useState<'login' | 'register' | 'forgot-password' | 'reset-password'>(() => {
     const path = window.location.pathname;
@@ -126,6 +128,7 @@ function Calendar() {
                 weeks={weeks}
                 loading={loading}
                 onWeekClick={setSelectedWeek}
+                onWeekPageClick={setPageWeek}
                 childGroups={childGroups}
               />
             ) : (
@@ -137,6 +140,14 @@ function Calendar() {
               />
             )}
           </main>
+
+          {pageWeek && (
+            <WeekPageView
+              key={pageWeek.week_start}
+              week={pageWeek}
+              onClose={() => setPageWeek(null)}
+            />
+          )}
 
           {selectedWeek && (
             <WeekEditor

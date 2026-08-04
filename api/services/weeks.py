@@ -63,6 +63,46 @@ async def update_week(
     return week
 
 
+async def set_week_html_page(week_start: datetime, html: str, user_id: str) -> Week:
+    """
+    Set (or replace) the HTML page for a week. Creates the week if it doesn't exist.
+    """
+    week = await get_or_create_week(week_start, user_id)
+    now = datetime.utcnow()
+
+    await week.update(
+        {"$set": {"html_page": html, "html_page_updated_at": now, "updated_at": now}}
+    )
+    await week.sync()
+
+    return week
+
+
+async def delete_week_html_page(week_start: datetime, user_id: str) -> bool:
+    """
+    Remove a week's HTML page, leaving the rest of the week intact.
+    """
+    normalized_start = get_week_start(week_start)
+    week = await Week.find_one(
+        Week.week_start == normalized_start, Week.user_id == user_id
+    )
+
+    if week is None or not week.has_html_page:
+        return False
+
+    await week.update(
+        {
+            "$set": {
+                "html_page": None,
+                "html_page_updated_at": None,
+                "updated_at": datetime.utcnow(),
+            }
+        }
+    )
+
+    return True
+
+
 async def delete_week(week_start: datetime, user_id: str) -> bool:
     """
     Delete a week (reset to nothing - it will be recreated with defaults on next access).

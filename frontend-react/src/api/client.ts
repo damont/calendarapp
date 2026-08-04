@@ -1,4 +1,4 @@
-import type { Week, WeekUpdate, LoginResponse, User, UserSettings } from '../types';
+import type { Week, WeekUpdate, WeekHtmlPage, LoginResponse, User, UserSettings } from '../types';
 
 export class ApiError extends Error {
   status: number;
@@ -160,6 +160,25 @@ class ApiClient {
         throw new Error('Unauthorized');
       }
       throw new Error('Failed to update week');
+    }
+
+    return response.json();
+  }
+
+  async getWeekPage(weekStart: string): Promise<WeekHtmlPage> {
+    const response = await fetch(`/api/weeks/${weekStart}/page`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        this.clearToken();
+        throw new Error('Unauthorized');
+      }
+      if (response.status === 404) {
+        throw new ApiError(404, 'This week has no page yet');
+      }
+      throw new Error('Failed to fetch week page');
     }
 
     return response.json();

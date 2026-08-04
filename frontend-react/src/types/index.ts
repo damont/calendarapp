@@ -35,8 +35,16 @@ export interface Week {
   weekday_events: WeekdayEvent[];
   sports: SportsEvent[];
   notes: string | null;
+  has_html_page: boolean;
+  html_page_updated_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface WeekHtmlPage {
+  week_start: string;
+  html: string;
+  updated_at: string | null;
 }
 
 export interface WeekUpdate {

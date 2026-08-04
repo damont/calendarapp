@@ -14,6 +14,8 @@ class WeekResponse(BaseModel):
     weekday_events: list[WeekdayEvent]
     sports: list[SportsEvent]
     notes: Optional[str]
+    has_html_page: bool = False
+    html_page_updated_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
@@ -26,6 +28,16 @@ class WeekUpdateRequest(BaseModel):
     weekday_events: Optional[list[WeekdayEvent]] = None
     sports: Optional[list[SportsEvent]] = None
     notes: Optional[str] = None
+
+
+class WeekHtmlPageResponse(BaseModel):
+    week_start: datetime
+    html: str
+    updated_at: Optional[datetime] = None
+
+
+class WeekHtmlPageUpdateRequest(BaseModel):
+    html: str = Field(..., description="Full HTML document for the week's page")
 
 
 class WeeksQueryParams(BaseModel):
