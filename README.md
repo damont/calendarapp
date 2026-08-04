@@ -9,7 +9,7 @@ Designed to be simple, self-hosted, and agent-friendly — expose the API docs s
 - **Weekly view** with weekend plans, weekday events, and sports schedules
 - **Month calendar** with clickable day cards
 - **Configurable child groups** — set up which kids are in your household
-- **Agent-ready** — generate API tokens from your profile page and point any AI agent at the OpenAPI docs
+- **Agent-ready** — generate API tokens and download portable Calendar or Email-to-Calendar skills from your profile page
 - **Mobile-friendly** responsive design
 - **Docker-based** deployment with MongoDB
 
@@ -59,16 +59,20 @@ Open the app and register. That's it — start adding your weekly plans.
 Want an AI agent to manage your calendar?
 
 1. Log in and click your username → **Profile**
-2. Generate an **Agent Token**
-3. Point your agent at `http://your-host:3000/api/schema` for the full OpenAPI docs
+2. Download the **Calendar** skill for general calendar work, the **Email to calendar** skill for inbox-driven updates, or both
+3. Give the ZIP to your agent and ask it to install the contained Agent Skill
+4. Generate an **Agent Token** and provide the token to the agent through its secret-storage mechanism
 
-The agent can then create/update weeks, add sports schedules, manage events — all through the REST API.
+Each ZIP follows the open [Agent Skills](https://agentskills.io/) directory format (`<skill-name>/SKILL.md`) and is generated with the URL of the running app. The token is deliberately kept separate and is never embedded in a download. In skill-aware clients such as Hermes, the general skill is available as `/calendar` after installation.
+
+The skills teach the agent to discover the live API through OpenAPI, preserve existing week data when merging changes, avoid duplicates, and verify every write. The Email-to-Calendar variant additionally requires an operator-authorized **read-only** email integration and treats email content as untrusted input.
 
 ## API
 
 The backend is a FastAPI app with auto-generated OpenAPI documentation:
 
-- **API Docs**: `http://localhost:3000/api/schema`
+- **OpenAPI schema**: `http://localhost:3000/api/openapi.json`
+- **Interactive API docs**: `http://localhost:3000/api/agent`
 - **Auth**: JWT Bearer tokens (login or use agent tokens)
 
 ### Key endpoints

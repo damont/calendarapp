@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiClient } from "../api/client";
+import { calendarSkills, downloadCalendarSkill, type CalendarSkillKind } from "../lib/agentSkills";
 
 export function UserProfile() {
   const { user } = useAuth();
-  const [expiresInDays, setExpiresInDays] = useState(30);
+  const [expiresInDays, setExpiresInDays] = useState(365);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [tokenResult, setTokenResult] = useState<{ access_token: string; expires_in_days: number } | null>(null);
@@ -52,6 +53,10 @@ export function UserProfile() {
 
   const baseUrl = window.location.origin;
 
+  const handleDownloadSkill = (kind: CalendarSkillKind) => {
+    downloadCalendarSkill(kind, baseUrl);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-6 text-gray-900">
@@ -93,14 +98,55 @@ export function UserProfile() {
           </div>
         </div>
 
+        {/* Agent Skills */}
+        <div className="border-t border-gray-200 pt-6 mt-6">
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">
+            Agent Skills
+          </h3>
+          <p className="text-xs text-gray-500 mb-3">
+            Download portable Agent Skills that teach an AI agent how to work with this calendar safely.
+          </p>
+
+          <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900 mb-4">
+            Each ZIP contains a standards-compatible <code className="font-mono">&lt;skill-name&gt;/SKILL.md</code>. Give the ZIP to your agent and ask it to install the skill. In Hermes, the installed skill becomes a slash command such as <code className="font-mono">/calendar</code>.
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {calendarSkills.map((skill) => (
+              <div key={skill.name} className="rounded-lg border border-gray-200 p-4 flex flex-col">
+                <div className="font-medium text-sm text-gray-900">{skill.title}</div>
+                <p className="text-xs text-gray-500 mt-1 mb-3 flex-1">{skill.description}</p>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadSkill(skill.name)}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-800 hover:bg-gray-50"
+                >
+                  Download {skill.title} skill
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Agent Token Section */}
         <div className="border-t border-gray-200 pt-6 mt-6">
           <h3 className="text-sm font-semibold text-gray-900 mb-1">
             Agent Access Token
           </h3>
           <p className="text-xs text-gray-500 mb-4">
-            Generate a token for AI agents to access your account via the API.
+            Generate the separate secret an installed skill needs to access your account. Tokens are never included in skill downloads.
           </p>
+
+          <div className="space-y-1 text-sm text-gray-600 mb-4 overflow-hidden">
+            <div>
+              <span className="font-medium text-gray-900">OpenAPI:</span>{' '}
+              <code className="px-1 py-0.5 rounded text-xs bg-gray-100 break-all">{baseUrl}/api/openapi.json</code>
+            </div>
+            <div>
+              <span className="font-medium text-gray-900">API Docs:</span>{' '}
+              <code className="px-1 py-0.5 rounded text-xs bg-gray-100 break-all">{baseUrl}/api/agent</code>
+            </div>
+          </div>
 
           {tokenResult ? (
             <div className="space-y-3">
@@ -122,16 +168,6 @@ export function UserProfile() {
               >
                 {copied ? 'Copied!' : 'Copy to Clipboard'}
               </button>
-              <div className="space-y-1 text-sm text-gray-600">
-                <div>
-                  <span className="font-medium text-gray-900">API Docs:</span>{' '}
-                  <code className="px-1 py-0.5 rounded text-xs bg-gray-100">{baseUrl}/api/agent</code>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900">API Base:</span>{' '}
-                  <code className="px-1 py-0.5 rounded text-xs bg-gray-100">{baseUrl}/api/</code>
-                </div>
-              </div>
               <button
                 type="button"
                 onClick={handleReset}
