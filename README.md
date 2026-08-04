@@ -9,7 +9,7 @@ Designed to be simple, self-hosted, and agent-friendly — expose the API docs s
 - **Weekly view** with weekend plans, weekday events, and sports schedules
 - **Month calendar** with clickable day cards
 - **Configurable child groups** — set up which kids are in your household
-- **Agent-ready** — generate API tokens and download portable Calendar or Email-to-Calendar skills from your profile page
+- **Agent-ready** — generate API tokens and download portable Calendar, Email-to-Calendar, or Calendar HTML skills from your profile page
 - **Mobile-friendly** responsive design
 - **Docker-based** deployment with MongoDB
 
@@ -59,13 +59,13 @@ Open the app and register. That's it — start adding your weekly plans.
 Want an AI agent to manage your calendar?
 
 1. Log in and click your username → **Profile**
-2. Download the **Calendar** skill for general calendar work, the **Email to calendar** skill for inbox-driven updates, or both
+2. Download the **Calendar** skill for general calendar work, **Email to calendar** for inbox-driven updates, or **Calendar HTML** to generate themed pages for the next three months
 3. Give the ZIP to your agent and ask it to install the contained Agent Skill
 4. Generate an **Agent Token** and provide the token to the agent through its secret-storage mechanism
 
 Each ZIP follows the open [Agent Skills](https://agentskills.io/) directory format (`<skill-name>/SKILL.md`) and is generated with the URL of the running app. The token is deliberately kept separate and is never embedded in a download. In skill-aware clients such as Hermes, the general skill is available as `/calendar` after installation.
 
-The skills teach the agent to discover the live API through OpenAPI, preserve existing week data when merging changes, avoid duplicates, and verify every write. The Email-to-Calendar variant additionally requires an operator-authorized **read-only** email integration and treats email content as untrusted input.
+The skills teach the agent to discover the live API through OpenAPI, preserve existing week data when merging changes, avoid duplicates, and verify every write. The Email-to-Calendar variant additionally requires an operator-authorized **read-only** email integration and treats email content as untrusted input. Calendar HTML creates or refreshes self-contained pages for each upcoming week, deliberately varying the visual theme and layout to reflect that week's plans and season.
 
 ## API
 
