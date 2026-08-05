@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from api.config import get_settings
+from api.migrations import migrate_user_settings
 from api.routes import auth, settings, weeks
 from api.schemas.orm.password_reset import PasswordResetToken
 from api.schemas.orm.user import User
@@ -20,8 +21,10 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     settings = get_settings()
     client = AsyncIOMotorClient(settings.mongodb_url)
+    database = client[settings.mongodb_db_name]
+    await migrate_user_settings(database)
     await init_beanie(
-        database=client[settings.mongodb_db_name],
+        database=database,
         document_models=[User, Week, PasswordResetToken],
     )
     logger.info("Connected to MongoDB: %s", settings.mongodb_db_name)
