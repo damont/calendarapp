@@ -78,4 +78,5 @@ export interface DayEvents {
 
 export interface UserSettings {
   child_groups: ChildGroup[];
+  default_months_out: number;
 }

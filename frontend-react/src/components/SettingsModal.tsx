@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { ChildGroup } from '../types';
+import type { ChildGroup, UserSettings } from '../types';
 
 const PRESET_COLORS = ['pink', 'purple', 'blue', 'green', 'amber', 'red', 'teal', 'indigo'];
 
@@ -16,7 +16,8 @@ const colorRingMap: Record<string, string> = {
 
 interface SettingsModalProps {
   childGroups: ChildGroup[];
-  onSave: (groups: ChildGroup[]) => Promise<void>;
+  defaultMonthsOut: number;
+  onSave: (settings: UserSettings) => Promise<void>;
   onClose: () => void;
 }
 
@@ -24,8 +25,9 @@ function generateId(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'group';
 }
 
-export function SettingsModal({ childGroups, onSave, onClose }: SettingsModalProps) {
+export function SettingsModal({ childGroups, defaultMonthsOut, onSave, onClose }: SettingsModalProps) {
   const [groups, setGroups] = useState<ChildGroup[]>(childGroups);
+  const [monthsOut, setMonthsOut] = useState(defaultMonthsOut);
   const [saving, setSaving] = useState(false);
 
   const addGroup = () => {
@@ -54,7 +56,10 @@ export function SettingsModal({ childGroups, onSave, onClose }: SettingsModalPro
   const handleSave = async () => {
     setSaving(true);
     try {
-      await onSave(groups.filter((g) => g.name.trim()));
+      await onSave({
+        child_groups: groups.filter((g) => g.name.trim()),
+        default_months_out: monthsOut,
+      });
       onClose();
     } finally {
       setSaving(false);
@@ -76,6 +81,27 @@ export function SettingsModal({ childGroups, onSave, onClose }: SettingsModalPro
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
+          <div className="mb-6">
+            <label htmlFor="default-months-out" className="block text-sm font-medium text-gray-900 mb-1">
+              Default months shown
+            </label>
+            <p className="text-xs text-gray-500 mb-2">Date range used when opening the calendar list.</p>
+            <input
+              id="default-months-out"
+              type="number"
+              min={1}
+              max={24}
+              value={monthsOut}
+              onChange={(event) => {
+                const value = Number(event.target.value);
+                if (Number.isInteger(value) && value >= 1 && value <= 24) {
+                  setMonthsOut(value);
+                }
+              }}
+              className="w-24 px-2 py-1.5 text-sm border border-gray-300 rounded-md"
+            />
+          </div>
+
           <div className="mb-4">
             <h3 className="text-sm font-medium text-gray-900 mb-1">Child Groups</h3>
             <p className="text-xs text-gray-500">Track which children you have each weekend. Leave empty to hide this feature.</p>
