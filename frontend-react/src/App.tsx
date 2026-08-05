@@ -25,9 +25,9 @@ function getWeekStart(date: Date): Date {
   return d;
 }
 
-function getTwoMonthsAhead(date: Date): Date {
+function getMonthsAhead(date: Date, months: number): Date {
   const d = new Date(date);
-  d.setMonth(d.getMonth() + 2);
+  d.setMonth(d.getMonth() + months);
   return d;
 }
 
@@ -36,7 +36,7 @@ function Calendar() {
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState(() => getWeekStart(new Date()));
-  const [endDate, setEndDate] = useState(() => getTwoMonthsAhead(new Date()));
+  const [endDate, setEndDate] = useState(() => getMonthsAhead(new Date(), 3));
   const [selectedWeek, setSelectedWeek] = useState<Week | null>(null);
   const [pageWeek, setPageWeek] = useState<Week | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -49,6 +49,8 @@ function Calendar() {
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [childGroups, setChildGroups] = useState<ChildGroup[]>([]);
+  const [defaultMonthsOut, setDefaultMonthsOut] = useState(3);
+  const [settingsReady, setSettingsReady] = useState(false);
 
   const loadWeeks = useCallback(async () => {
     setLoading(true);
@@ -66,17 +68,29 @@ function Calendar() {
     try {
       const settings = await apiClient.getSettings();
       setChildGroups(settings.child_groups);
+      setDefaultMonthsOut(settings.default_months_out);
+      setStartDate(getWeekStart(new Date()));
+      setEndDate(getMonthsAhead(new Date(), settings.default_months_out));
     } catch (error) {
       console.error('Failed to load settings:', error);
+    } finally {
+      setSettingsReady(true);
     }
   }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadWeeks();
       loadSettings();
+    } else {
+      setSettingsReady(false);
     }
-  }, [isAuthenticated, loadWeeks, loadSettings]);
+  }, [isAuthenticated, loadSettings]);
+
+  useEffect(() => {
+    if (isAuthenticated && settingsReady) {
+      loadWeeks();
+    }
+  }, [isAuthenticated, settingsReady, loadWeeks]);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
     setStartDate(start);
@@ -163,10 +177,13 @@ function Calendar() {
       {showSettings && (
         <SettingsModal
           childGroups={childGroups}
-          onSave={async (groups) => {
-            await apiClient.updateSettings({ child_groups: groups });
-            setChildGroups(groups);
-            await loadWeeks();
+          defaultMonthsOut={defaultMonthsOut}
+          onSave={async (settings) => {
+            const saved = await apiClient.updateSettings(settings);
+            setChildGroups(saved.child_groups);
+            setDefaultMonthsOut(saved.default_months_out);
+            setStartDate(getWeekStart(new Date()));
+            setEndDate(getMonthsAhead(new Date(), saved.default_months_out));
           }}
           onClose={() => setShowSettings(false)}
         />

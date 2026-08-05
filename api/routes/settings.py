@@ -12,7 +12,7 @@ router = APIRouter(prefix="/settings", tags=["settings"])
 @router.get("", response_model=SettingsResponse)
 async def get_settings(user: User = Depends(get_current_user)):
     """Get user settings."""
-    return SettingsResponse(child_groups=user.child_groups)
+    return SettingsResponse(**user.settings.model_dump())
 
 
 @router.put("", response_model=SettingsResponse)
@@ -21,7 +21,10 @@ async def update_settings(
     user: User = Depends(get_current_user),
 ):
     """Update user settings."""
-    user.child_groups = request.child_groups
+    if request.child_groups is not None:
+        user.settings.child_groups = request.child_groups
+    if request.default_months_out is not None:
+        user.settings.default_months_out = request.default_months_out
     user.updated_at = datetime.now(timezone.utc)
     await user.save()
-    return SettingsResponse(child_groups=user.child_groups)
+    return SettingsResponse(**user.settings.model_dump())
