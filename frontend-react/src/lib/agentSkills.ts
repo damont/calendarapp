@@ -1,6 +1,6 @@
 import { strToU8, zipSync } from 'fflate';
 
-export type CalendarSkillKind = 'calendar' | 'email-to-calendar' | 'calendar-html';
+export type CalendarSkillKind = 'david-calendar' | 'david-calendar-email' | 'david-calendar-html';
 
 interface SkillDefinition {
   name: CalendarSkillKind;
@@ -11,22 +11,22 @@ interface SkillDefinition {
 
 export const calendarSkills: SkillDefinition[] = [
   {
-    name: 'calendar',
+    name: 'david-calendar',
     title: 'Calendar',
     description: 'Add, update, find, and remove family calendar information from natural-language requests.',
-    fileName: 'calendar-skill.zip',
+    fileName: 'david-calendar-skill.zip',
   },
   {
-    name: 'email-to-calendar',
+    name: 'david-calendar-email',
     title: 'Email to calendar',
     description: 'Read calendar-related email with an authorized read-only email connection and safely merge events into the family calendar.',
-    fileName: 'email-to-calendar-skill.zip',
+    fileName: 'david-calendar-email-skill.zip',
   },
   {
-    name: 'calendar-html',
+    name: 'david-calendar-html',
     title: 'Calendar HTML',
     description: 'Create imaginative, self-contained HTML pages for each calendar week in the next three months.',
-    fileName: 'calendar-html-skill.zip',
+    fileName: 'david-calendar-html-skill.zip',
   },
 ];
 
@@ -74,7 +74,7 @@ Find the week read and update operations in the schema. Dates belong to Monday-b
 
 function calendarSkill(baseUrl: string): string {
   return `---
-name: calendar
+name: david-calendar
 description: Manage family calendar weeks, events, sports, plans, children, and notes. Use for calendar questions or requests to add, update, move, find, or remove calendar information.
 license: MIT
 compatibility: Requires network access to the Calendar App and an operator-issued bearer token.
@@ -107,10 +107,10 @@ ${sharedContract(baseUrl)}
 
 ## Examples
 
-- \`/calendar Add “Grandma visiting” to the notes for the week of September 14.\`
-- \`/calendar Add Mia's soccer game Saturday at 10 AM at Riverside Field.\`
-- \`/calendar Move the dentist appointment from Tuesday to Thursday.\`
-- \`/calendar What do we have planned next weekend?\`
+- \`/david-calendar Add “Grandma visiting” to the notes for the week of September 14.\`
+- \`/david-calendar Add Mia's soccer game Saturday at 10 AM at Riverside Field.\`
+- \`/david-calendar Move the dentist appointment from Tuesday to Thursday.\`
+- \`/david-calendar What do we have planned next weekend?\`
 
 ## Verification
 
@@ -120,7 +120,7 @@ A change is complete only after a follow-up read contains the requested value ex
 
 function emailToCalendarSkill(baseUrl: string): string {
   return `---
-name: email-to-calendar
+name: david-calendar-email
 description: Extract events, sports, plans, and notes from email and merge them into the family calendar. Use when asked to process calendar-related messages or monitor an inbox for schedule updates.
 license: MIT
 compatibility: Requires network access, an operator-issued Calendar App bearer token, and an authorized read-only email integration.
@@ -168,7 +168,7 @@ A run is complete only when each proposed item is accounted for and every write 
 
 function calendarHtmlSkill(baseUrl: string): string {
   return `---
-name: calendar-html
+name: david-calendar-html
 description: Generate creative standalone HTML pages for Calendar App weeks. Use when asked to build, refresh, or maintain themed weekly pages for the upcoming three months.
 license: MIT
 compatibility: Requires network access to the Calendar App and an operator-issued bearer token.
@@ -232,9 +232,9 @@ Produce one complete HTML document per week, including \`<!doctype html>\`, \`<h
 
 ## Examples
 
-- \`/calendar-html Create any missing weekly pages for the next three months.\`
-- \`/calendar-html Refresh upcoming pages whose calendar data has changed.\`
-- \`/calendar-html Redesign the week of October 12 with a more dramatic theme.\`
+- \`/david-calendar-html Create any missing weekly pages for the next three months.\`
+- \`/david-calendar-html Refresh upcoming pages whose calendar data has changed.\`
+- \`/david-calendar-html Redesign the week of October 12 with a more dramatic theme.\`
 
 ## Verification
 
@@ -244,11 +244,11 @@ The run is complete only when every Monday-based week through the three-month ho
 
 export function buildCalendarSkill(kind: CalendarSkillKind, baseUrl: string): string {
   switch (kind) {
-    case 'calendar':
+    case 'david-calendar':
       return calendarSkill(baseUrl);
-    case 'email-to-calendar':
+    case 'david-calendar-email':
       return emailToCalendarSkill(baseUrl);
-    case 'calendar-html':
+    case 'david-calendar-html':
       return calendarHtmlSkill(baseUrl);
   }
 }

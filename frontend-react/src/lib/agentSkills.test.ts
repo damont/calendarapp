@@ -5,7 +5,7 @@ import { buildCalendarSkill, buildCalendarSkillArchive } from './agentSkills';
 const baseUrl = 'https://calendar.example.com/';
 
 describe('downloadable calendar skills', () => {
-  it.each(['calendar', 'email-to-calendar', 'calendar-html'] as const)('builds a valid standalone %s skill archive', (kind) => {
+  it.each(['david-calendar', 'david-calendar-email', 'david-calendar-html'] as const)('builds a valid standalone %s skill archive', (kind) => {
     const files = unzipSync(buildCalendarSkillArchive(kind, baseUrl));
     const path = `${kind}/SKILL.md`;
     expect(Object.keys(files)).toEqual([path]);
@@ -21,18 +21,18 @@ describe('downloadable calendar skills', () => {
   });
 
   it('warns that list updates replace the complete field', () => {
-    expect(buildCalendarSkill('calendar', baseUrl)).toContain('sending a list replaces that entire list');
+    expect(buildCalendarSkill('david-calendar', baseUrl)).toContain('sending a list replaces that entire list');
   });
 
   it('constrains email access to read-only and treats messages as untrusted', () => {
-    const markdown = buildCalendarSkill('email-to-calendar', baseUrl);
+    const markdown = buildCalendarSkill('david-calendar-email', baseUrl);
     expect(markdown).toMatch(/read-only scopes/);
     expect(markdown).toMatch(/untrusted data/);
     expect(markdown).toMatch(/Never duplicate/);
   });
 
   it('makes the HTML skill creative, self-contained, and bounded to three months', () => {
-    const markdown = buildCalendarSkill('calendar-html', baseUrl);
+    const markdown = buildCalendarSkill('david-calendar-html', baseUrl);
     expect(markdown).toMatch(/three calendar months/);
     expect(markdown).toMatch(/drastically different from week to week/);
     expect(markdown).toMatch(/Adjacent weeks should not look like template recolors/);

@@ -108,7 +108,7 @@ export function UserProfile() {
           </p>
 
           <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900 mb-4">
-            Each ZIP contains a standards-compatible <code className="font-mono">&lt;skill-name&gt;/SKILL.md</code>. Give the ZIP to your agent and ask it to install the skill. In Hermes, the installed skill becomes a slash command such as <code className="font-mono">/calendar</code>.
+            Each ZIP contains a standards-compatible <code className="font-mono">&lt;skill-name&gt;/SKILL.md</code>. Give the ZIP to your agent and ask it to install the skill. In Hermes, the installed skill becomes a slash command such as <code className="font-mono">/david-calendar</code>.
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
