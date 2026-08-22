@@ -103,6 +103,19 @@ function Calendar() {
     await loadWeeks();
   };
 
+  const handleCloseWeekEditor = () => {
+    const weekStartToRestore = selectedWeek?.week_start;
+    setSelectedWeek(null);
+    if (weekStartToRestore) {
+      const id = `week-card-${weekStartToRestore.split('T')[0]}`;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.getElementById(id)?.scrollIntoView({ block: 'start' });
+        });
+      });
+    }
+  };
+
   if (!isAuthenticated) {
     if (authView === 'forgot-password') {
       return <ForgotPassword onBack={() => { setAuthView('login'); window.history.pushState({}, '', '/'); }} />;
@@ -168,7 +181,7 @@ function Calendar() {
               week={selectedWeek}
               childGroups={childGroups}
               onSave={handleSaveWeek}
-              onClose={() => setSelectedWeek(null)}
+              onClose={handleCloseWeekEditor}
             />
           )}
         </>
