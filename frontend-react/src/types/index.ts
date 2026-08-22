@@ -15,7 +15,7 @@ export interface WeekdayEvent {
 export interface SportsEvent {
   child_name: string;
   sport: string;
-  day: string;
+  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
   time: string;
   location: string;
 }

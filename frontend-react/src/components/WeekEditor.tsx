@@ -322,6 +322,8 @@ function WeekdayEventsTab({
   );
 }
 
+const SPORTS_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+
 function SportsTab({
   sports,
   onChange,
@@ -375,11 +377,14 @@ function SportsTab({
             />
             <select
               value={sport.day}
-              onChange={(e) => updateSport(i, { day: e.target.value })}
+              onChange={(e) => updateSport(i, { day: e.target.value as SportsEvent['day'] })}
               className="px-2 py-1.5 text-sm border border-gray-300 rounded-md"
             >
-              <option value="saturday">Saturday</option>
-              <option value="sunday">Sunday</option>
+              {SPORTS_DAYS.map((day) => (
+                <option key={day} value={day}>
+                  {day.charAt(0).toUpperCase() + day.slice(1)}
+                </option>
+              ))}
             </select>
             <input
               type="text"
