@@ -10,6 +10,33 @@ interface WeekEditorProps {
 
 type Tab = 'kids' | 'weekend' | 'weekday' | 'sports' | 'notes';
 
+const DAY_OFFSETS: Record<string, number> = {
+  monday: 0,
+  tuesday: 1,
+  wednesday: 2,
+  thursday: 3,
+  friday: 4,
+  saturday: 5,
+  sunday: 6,
+};
+
+const DAY_LABELS: Record<string, string> = {
+  monday: 'Monday',
+  tuesday: 'Tuesday',
+  wednesday: 'Wednesday',
+  thursday: 'Thursday',
+  friday: 'Friday',
+  saturday: 'Saturday',
+  sunday: 'Sunday',
+};
+
+function formatDayOption(weekStart: Date, day: string): string {
+  const d = new Date(weekStart);
+  d.setDate(weekStart.getDate() + (DAY_OFFSETS[day] ?? 0));
+  const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return `${DAY_LABELS[day] ?? day} · ${dateStr}`;
+}
+
 export function WeekEditor({ week, childGroups, onSave, onClose }: WeekEditorProps) {
   const hasKidsFeature = childGroups.length > 0;
   const defaultTab: Tab = hasKidsFeature ? 'kids' : 'weekend';
@@ -24,20 +51,18 @@ export function WeekEditor({ week, childGroups, onSave, onClose }: WeekEditorPro
   const [notes, setNotes] = useState(week.notes || '');
 
   const weekStart = new Date(week.week_start);
-  const saturday = new Date(weekStart);
-  saturday.setDate(weekStart.getDate() + 5);
-  const sunday = new Date(weekStart);
-  sunday.setDate(weekStart.getDate() + 6);
+  const weekEnd = new Date(week.week_end);
 
-  const formatWeekendDates = (): string => {
-    const satDay = saturday.getDate();
-    const sunDay = sunday.getDate();
-    const month = saturday.toLocaleDateString('en-US', { month: 'short' });
-    if (saturday.getMonth() !== sunday.getMonth()) {
-      const sunMonth = sunday.toLocaleDateString('en-US', { month: 'short' });
-      return `${month} ${satDay} - ${sunMonth} ${sunDay}`;
+  const formatWeekRange = (): string => {
+    const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
+    const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+    const startDay = weekStart.getDate();
+    const endDay = weekEnd.getDate();
+
+    if (startMonth === endMonth) {
+      return `${startMonth} ${startDay}-${endDay}`;
     }
-    return `${month} ${satDay}-${sunDay}`;
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
   };
 
   const handleSave = async () => {
@@ -71,7 +96,7 @@ export function WeekEditor({ week, childGroups, onSave, onClose }: WeekEditorPro
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-medium text-gray-900">
-              Weekend of {formatWeekendDates()}
+              Week of {formatWeekRange()}
             </h2>
             <button
               onClick={onClose}
@@ -111,13 +136,13 @@ export function WeekEditor({ week, childGroups, onSave, onClose }: WeekEditorPro
             />
           )}
           {activeTab === 'weekend' && (
-            <WeekendPlansTab plans={weekendPlans} onChange={setWeekendPlans} />
+            <WeekendPlansTab plans={weekendPlans} onChange={setWeekendPlans} weekStart={weekStart} />
           )}
           {activeTab === 'weekday' && (
-            <WeekdayEventsTab events={weekdayEvents} onChange={setWeekdayEvents} />
+            <WeekdayEventsTab events={weekdayEvents} onChange={setWeekdayEvents} weekStart={weekStart} />
           )}
           {activeTab === 'sports' && (
-            <SportsTab sports={sports} onChange={setSports} />
+            <SportsTab sports={sports} onChange={setSports} weekStart={weekStart} />
           )}
           {activeTab === 'notes' && (
             <NotesTab notes={notes} onChange={setNotes} />
@@ -182,9 +207,11 @@ function KidsTab({
 function WeekendPlansTab({
   plans,
   onChange,
+  weekStart,
 }: {
   plans: WeekendPlan[];
   onChange: (plans: WeekendPlan[]) => void;
+  weekStart: Date;
 }) {
   const addPlan = () => {
     onChange([...plans, { title: '', day: 'saturday', time: '' }]);
@@ -210,8 +237,8 @@ function WeekendPlansTab({
               onChange={(e) => updatePlan(i, { day: e.target.value as 'saturday' | 'sunday' })}
               className="px-2 py-1.5 text-sm border border-gray-300 rounded-md"
             >
-              <option value="saturday">Saturday</option>
-              <option value="sunday">Sunday</option>
+              <option value="saturday">{formatDayOption(weekStart, 'saturday')}</option>
+              <option value="sunday">{formatDayOption(weekStart, 'sunday')}</option>
             </select>
             <input
               type="text"
@@ -251,9 +278,11 @@ function WeekendPlansTab({
 function WeekdayEventsTab({
   events,
   onChange,
+  weekStart,
 }: {
   events: WeekdayEvent[];
   onChange: (events: WeekdayEvent[]) => void;
+  weekStart: Date;
 }) {
   const addEvent = () => {
     onChange([...events, { title: '', day: 'monday', time: '' }]);
@@ -283,7 +312,7 @@ function WeekdayEventsTab({
             >
               {days.map((day) => (
                 <option key={day} value={day}>
-                  {day.charAt(0).toUpperCase() + day.slice(1)}
+                  {formatDayOption(weekStart, day)}
                 </option>
               ))}
             </select>
@@ -327,9 +356,11 @@ const SPORTS_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'sa
 function SportsTab({
   sports,
   onChange,
+  weekStart,
 }: {
   sports: SportsEvent[];
   onChange: (sports: SportsEvent[]) => void;
+  weekStart: Date;
 }) {
   const addSport = () => {
     onChange([...sports, { child_name: '', sport: '', day: 'saturday', time: '', location: '' }]);
@@ -382,7 +413,7 @@ function SportsTab({
             >
               {SPORTS_DAYS.map((day) => (
                 <option key={day} value={day}>
-                  {day.charAt(0).toUpperCase() + day.slice(1)}
+                  {formatDayOption(weekStart, day)}
                 </option>
               ))}
             </select>

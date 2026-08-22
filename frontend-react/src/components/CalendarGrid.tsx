@@ -44,14 +44,15 @@ export function CalendarGrid({ weeks, loading, onWeekClick, onWeekPageClick, chi
         const isCurrentWeek = weekStartDate === currentWeekStart;
 
         return (
-          <WeekCard
-            key={week.week_start}
-            week={week}
-            isCurrentWeek={isCurrentWeek}
-            childGroups={childGroups}
-            onClick={() => onWeekClick(week)}
-            onOpenPage={() => onWeekPageClick(week)}
-          />
+          <div key={week.week_start} id={`week-card-${weekStartDate}`}>
+            <WeekCard
+              week={week}
+              isCurrentWeek={isCurrentWeek}
+              childGroups={childGroups}
+              onClick={() => onWeekClick(week)}
+              onOpenPage={() => onWeekPageClick(week)}
+            />
+          </div>
         );
       })}
     </div>
