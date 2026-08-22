@@ -1,0 +1,21 @@
+# Override applied only when deploying to the piservices host, on top of
+# docker-compose.yml: docker compose -f docker-compose.yml -f compose.piservices.yml ...
+#
+# piservices runs a shared reverse-proxy nginx (piservices-gateway) that reaches
+# app frontends by container name over the external `piservices-proxy` Docker
+# network. Without this file, a container recreate drops that attachment
+# (it isn't declared anywhere) and the reverse proxy starts returning 502s even
+# though the app itself is healthy — this bit us once, see git history.
+#
+# Not merged into the base docker-compose.yml because `piservices-proxy` is an
+# external network that only exists on the piservices host; requiring it there
+# would break `docker compose up` on any other machine.
+services:
+  frontend:
+    networks:
+      - default
+      - piservices-proxy
+
+networks:
+  piservices-proxy:
+    external: true
