@@ -1,4 +1,5 @@
 import type { Week, ChildGroup } from '../types';
+import { DAY_ORDER, normalizeDayOfWeek } from '../lib/dayOfWeek';
 import { ChildBadges } from './ChildBadges';
 
 interface WeekCardProps {
@@ -9,7 +10,6 @@ interface WeekCardProps {
   onOpenPage: () => void;
 }
 
-const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 const DAY_LABELS: Record<(typeof DAY_ORDER)[number], string> = {
   monday: 'Monday',
   tuesday: 'Tuesday',
@@ -59,20 +59,28 @@ export function WeekCard({ week, isCurrentWeek, childGroups, onClick, onOpenPage
   });
 
   week.weekend_plans.forEach((plan, i) => {
-    eventsByDay[plan.day]?.push({ key: `plan-${i}`, title: plan.title, time: plan.time });
+    const day = normalizeDayOfWeek(plan.day);
+    if (day) {
+      eventsByDay[day].push({ key: `plan-${i}`, title: plan.title, time: plan.time });
+    }
   });
   week.weekday_events.forEach((event, i) => {
-    eventsByDay[event.day]?.push({ key: `weekday-${i}`, title: event.title, time: event.time });
+    const day = normalizeDayOfWeek(event.day);
+    if (day) {
+      eventsByDay[day].push({ key: `weekday-${i}`, title: event.title, time: event.time });
+    }
   });
   week.sports.forEach((sport, i) => {
-    const day = sport.day.toLowerCase();
-    eventsByDay[day]?.push({
-      key: `sport-${i}`,
-      title: sport.sport,
-      time: sport.time,
-      location: sport.location,
-      childGroup: findChildGroup(sport.child_name),
-    });
+    const day = normalizeDayOfWeek(sport.day);
+    if (day) {
+      eventsByDay[day].push({
+        key: `sport-${i}`,
+        title: sport.sport,
+        time: sport.time,
+        location: sport.location,
+        childGroup: findChildGroup(sport.child_name),
+      });
+    }
   });
 
   const activeDays = DAY_ORDER.filter((day) => eventsByDay[day].length > 0);

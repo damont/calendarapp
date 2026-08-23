@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Week, WeekUpdate, WeekendPlan, WeekdayEvent, SportsEvent, ChildGroup } from '../types';
+import { normalizeDayOfWeek } from '../lib/dayOfWeek';
 
 interface WeekEditorProps {
   week: Week;
@@ -233,7 +234,7 @@ function WeekendPlansTab({
         <div key={i} className="p-3 bg-gray-50 rounded-md space-y-3">
           <div className="flex gap-3">
             <select
-              value={plan.day}
+              value={normalizeDayOfWeek(plan.day) ?? plan.day}
               onChange={(e) => updatePlan(i, { day: e.target.value as 'saturday' | 'sunday' })}
               className="px-2 py-1.5 text-sm border border-gray-300 rounded-md"
             >
@@ -306,7 +307,7 @@ function WeekdayEventsTab({
         <div key={i} className="p-3 bg-gray-50 rounded-md space-y-3">
           <div className="flex gap-3">
             <select
-              value={event.day}
+              value={normalizeDayOfWeek(event.day) ?? event.day}
               onChange={(e) => updateEvent(i, { day: e.target.value as WeekdayEvent['day'] })}
               className="px-2 py-1.5 text-sm border border-gray-300 rounded-md"
             >
@@ -407,7 +408,7 @@ function SportsTab({
               className="px-2 py-1.5 text-sm border border-gray-300 rounded-md"
             />
             <select
-              value={sport.day}
+              value={normalizeDayOfWeek(sport.day) ?? sport.day}
               onChange={(e) => updateSport(i, { day: e.target.value as SportsEvent['day'] })}
               className="px-2 py-1.5 text-sm border border-gray-300 rounded-md"
             >
